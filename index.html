@@ -59,12 +59,35 @@
 .gender-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}.gender-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.variant-history{color:#4d439b!important;font-weight:700}
 @media(max-width:880px){.saved-party-mons,.gender-columns,.gender-list{grid-template-columns:1fr}}
 @media(max-width:520px){.base-stats{grid-template-columns:repeat(2,1fr)}}
+
+/* v0.5: local-catalog team integration / defensive matchup, no external assets */
+.team-members{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:16px 0}
+.team-member{border:1px solid #e4e9f1;background:#fbfcff;border-radius:13px;padding:12px;min-width:0}
+.team-types{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}
+.team-types .type-chip{font-size:.71rem;padding:4px 8px}
+.team-stats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:3px;margin:9px 0}
+.team-stats span{display:flex;flex-direction:column;align-items:center;border-radius:7px;background:#eff2f9;padding:5px 0;min-width:0}
+.team-stats small{font-size:.62rem;color:#67748c}.team-stats b{font-size:.85rem;font-variant-numeric:tabular-nums}
+.team-control-label{font-size:.74rem!important;margin-top:8px}.team-control-label select{min-height:39px;padding:7px!important}
+.team-analysis-box{border-top:1px solid #e4e8f1;border-bottom:1px solid #e4e8f1;margin:13px 0;padding:15px 0}
+.team-risk{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}.risk-chip{display:inline-flex;align-items:center;gap:5px;background:#fff6f2;border:1px solid #f5dbd2;border-radius:9px;padding:6px 8px;font-size:.75rem;color:#79463d}
+.risk-chip i,.matrix-row i{width:9px;height:9px;border-radius:3px;display:inline-block;flex-shrink:0}
+.matrix-details{margin:13px 0}.matrix-details summary{color:#5144b8;cursor:pointer;font-weight:800;font-size:.86rem;padding:8px}
+.type-matrix{border:1px solid #e1e5ed;border-radius:11px;overflow:hidden;margin:8px 0}.matrix-head,.matrix-row{display:grid;grid-template-columns:1.6fr .6fr .9fr .6fr;padding:7px 9px;align-items:center;gap:3px;font-size:.76rem}
+.matrix-head{background:#f0f3f9;color:#5e6a81;font-weight:800}.matrix-row:nth-child(odd){background:#f8f9fc}.matrix-row span{display:flex;align-items:center;gap:7px}.matrix-row b{text-align:center;font-variant-numeric:tabular-nums}
+.danger-text{color:#c2465c}.warn-text{color:#b16539}.form-caption{color:#5645b7;font-size:.75rem;font-weight:700;margin:4px 0}
+.draft-team-preview{background:#f7f7ff;border:1px solid #e4dfff;border-radius:12px;margin:13px 0;padding:12px}.draft-member-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.draft-member{background:white;border:1px solid #ecebf5;padding:9px;border-radius:9px;min-width:0;font-size:.79rem}.draft-member p{margin:4px 0}.draft-member b{overflow-wrap:anywhere}
+.battle-dex-row{padding:9px 0;border-bottom:1px solid #eceef3}.team-analysis-section{margin-top:23px}.team-analysis-section>h2{font-size:1.18rem;margin-bottom:12px}
+@media(max-width:1150px){.team-members{grid-template-columns:1fr}}
+@media(max-width:720px){.team-members{grid-template-columns:1fr}}
+@media(max-width:440px){.draft-member-grid{grid-template-columns:1fr}.type-matrix .matrix-row,.type-matrix .matrix-head{font-size:.69rem}}
+
   </style>
 </head>
 <body>
 <div class="app">
   <aside>
-    <div class="brand"><span class="eyebrow">UNOFFICIAL BATTLE TRACKER</span><strong>⚡ 対戦ノート</strong><small>シングル対戦分析 ・ <span class="version-badge">Ver.0.4</span></small></div>
+    <div class="brand"><span class="eyebrow">UNOFFICIAL BATTLE TRACKER</span><strong>⚡ 対戦ノート</strong><small>シングル対戦分析 ・ <span class="version-badge">Ver.0.5</span></small></div>
     <nav class="nav" aria-label="メインメニュー">
       <button type="button" data-tab="home" class="active"><span class="symbol">⌂</span>ホーム</button>
       <button type="button" data-tab="record"><span class="symbol">✚</span>対戦記録</button>
@@ -206,7 +229,7 @@ $('#tab-analysis').innerHTML=`<div class="card" style="margin-bottom:17px"><div 
 function renderHistory(){let matches=[...data.matches].sort((a,b)=>new Date(b.date)-new Date(a.date));if(historyParty!=='all')matches=matches.filter(m=>m.partyId===historyParty);if(historyResult!=='all')matches=matches.filter(m=>m.result===historyResult);if(historyQuery.trim()){const q=historyQuery.trim().toLowerCase();matches=matches.filter(m=>[...opponents(m),...(m.myPicks||[]),...(m.opponentPicks||[]),m.memo||'',...(m.tags||[]),nameOfParty(m.partyId)].join(' ').toLowerCase().includes(q));}
 $('#tab-history').innerHTML=`<div class="card"><div class="form-row"><label class="field">構築で絞り込む<select id="history-party"><option value="all">すべてのパーティ</option>${data.parties.map(p=>`<option value="${h(p.id)}" ${historyParty===p.id?'selected':''}>${h(p.name)}</option>`).join('')}</select></label><label class="field">勝敗<select id="history-result"><option value="all">すべて</option><option value="win" ${historyResult==='win'?'selected':''}>勝利のみ</option><option value="loss" ${historyResult==='loss'?'selected':''}>敗北のみ</option></select></label></div><div style="margin-top:12px"><label class="field">モンスター・タグ・メモから検索<input type="search" id="history-query" placeholder="例：相手名" value="${h(historyQuery)}"></label></div><div class="spaced" style="margin-top:23px"><h2 style="margin:0">対戦一覧 <span class="pill">${matches.length}件</span></h2></div><div id="history-list">${matches.length?matches.map(m=>detailCard(m,true)).join(''):empty('条件に一致する記録はありません','試合を記録するか、絞り込み条件を変更してね。')}</div></div>`}
 function renderBackup(){$('#tab-backup').innerHTML=`<div class="grid two"><div class="card"><h2>バックアップを書き出す</h2><p class="muted small">登録した構築・対戦履歴・個人図鑑を1つのJSONファイルに保存します。iPadの「ファイル」アプリやiCloud Driveなど安全な場所に保管してね。</p><p class="small">現在：<strong>${data.parties.length}構築 / ${data.matches.length}試合</strong></p><button type="button" class="button" id="export">JSONをダウンロード</button></div><div class="card"><h2>バックアップから復元</h2><p class="muted small">バックアップJSONから復元します。対戦記録は置き換え、個人図鑑はバックアップに含まれる場合のみ置き換えます。</p><button type="button" class="button secondary" id="import">JSONファイルを選択</button></div></div><div class="notice" style="margin-top:17px"><strong>大切：</strong>記録は今使っているブラウザ／ホーム画面アプリの保存領域にあります。Safariのデータ削除、端末変更、プライベートブラウズなどで失われることがあります。Safariとホーム画面アプリで保存領域が分かれる場合もあります。定期的にJSONバックアップを取ってください。GitHubに対戦データは自動送信されません。</div>`}
-function persistMatch(){const party=data.parties.find(p=>p.id===draft.partyId);if(!party){alert('パーティを選んでください');return;}const opponent=draft.opponent.map(s=>s.trim());if(new Set(opponent.filter(Boolean)).size!==opponent.filter(Boolean).length){alert('相手のパーティに同じ名前が複数あります。確認してください。');return;}const payload={id:draft.editId||uid(),date:draft.editId?(data.matches.find(m=>m.id===draft.editId)?.date||new Date().toISOString()):new Date().toISOString(),partyId:draft.partyId,result:draft.result,opponent,myPicks:[...draft.myPicks],opponentPicks:[...draft.opponentPicks],myLead:draft.myLead,oppLead:draft.oppLead,trouble:draft.trouble,style:draft.style,tags:[...draft.tags],memo:draft.memo.trim(),myMega:{...draft.myMega},oppMega:{...draft.oppMega},oppGenders:{...draft.oppGenders,...Object.fromEntries(draft.opponentPicks.filter(n=>FORM_DB[n]?.gender).map(n=>[n,FORM_DB[n].gender]))},myGenders:{...draft.myGenders,...Object.fromEntries(draft.myPicks.filter(n=>FORM_DB[n]?.gender).map(n=>[n,FORM_DB[n].gender]))}};let previous=JSON.stringify(data.matches);if(draft.editId){const idx=data.matches.findIndex(m=>m.id===draft.editId);if(idx>=0)data.matches[idx]=payload;else data.matches.push(payload)}else data.matches.push(payload);if(!saveData()){data.matches=JSON.parse(previous);return;}draft=freshDraft();draft.partyId=party.id;toast('対戦記録を保存したよ！');setTab('home')}
+function persistMatch(){const party=data.parties.find(p=>p.id===draft.partyId);if(!party){alert('パーティを選んでください');return;}const opponent=draft.opponent.map(s=>s.trim());if(new Set(opponent.filter(Boolean)).size!==opponent.filter(Boolean).length){alert('相手のパーティに同じ名前が複数あります。確認してください。');return;}const payload={id:draft.editId||uid(),date:draft.editId?(data.matches.find(m=>m.id===draft.editId)?.date||new Date().toISOString()):new Date().toISOString(),partyId:draft.partyId,result:draft.result,opponent,myPicks:[...draft.myPicks],opponentPicks:[...draft.opponentPicks],myLead:draft.myLead,oppLead:draft.oppLead,trouble:draft.trouble,style:draft.style,tags:[...draft.tags],memo:draft.memo.trim(),myMega:{...draft.myMega},oppMega:{...draft.oppMega},oppGenders:{...draft.oppGenders,...Object.fromEntries(draft.opponentPicks.filter(n=>FORM_DB[n]?.gender&&FORM_DB[n].gender!=='unknown').map(n=>[n,FORM_DB[n].gender]))},myGenders:{...draft.myGenders,...Object.fromEntries(draft.myPicks.filter(n=>FORM_DB[n]?.gender&&FORM_DB[n].gender!=='unknown').map(n=>[n,FORM_DB[n].gender]))}};let previous=JSON.stringify(data.matches);if(draft.editId){const idx=data.matches.findIndex(m=>m.id===draft.editId);if(idx>=0)data.matches[idx]=payload;else data.matches.push(payload)}else data.matches.push(payload);if(!saveData()){data.matches=JSON.parse(previous);return;}draft=freshDraft();draft.partyId=party.id;toast('対戦記録を保存したよ！');setTab('home')}
 function startEdit(id){const m=data.matches.find(m=>m.id===id);if(!m)return;draft={result:m.result,partyId:m.partyId,opponent:Array.from({length:6},(_,i)=>m.opponent?.[i]||''),myPicks:[...(m.myPicks||[])],opponentPicks:[...(m.opponentPicks||[])],myLead:m.myLead||'',oppLead:m.oppLead||'',trouble:m.trouble||'',style:m.style||'未分類',tags:[...(m.tags||[])],memo:m.memo||'',myMega:m.myMega||{from:'',to:''},oppMega:m.oppMega||{from:'',to:''},oppGenders:m.oppGenders||{},myGenders:m.myGenders||{},editId:m.id};setTab('record')}
 document.addEventListener('click',e=>{const btn=e.target.closest('button');if(!btn)return;if(btn.hasAttribute('data-picker-close')){closePicker();return;}if(btn.dataset.pickerSlot!==undefined){if(pickerState){pickerState.slot=Number(btn.dataset.pickerSlot);renderPicker();}return;}if(btn.dataset.pickPokemon!==undefined){applyPokemonChoice(btn.dataset.pickPokemon);return;}if(btn.dataset.openPicker!==undefined){openPicker(btn.dataset.openPicker,Number(btn.dataset.pickerIndex));return;}if(btn.dataset.tab){setTab(btn.dataset.tab);return;}if(btn.dataset.partyUse){draft=freshDraft();draft.partyId=btn.dataset.partyUse;setTab('record');return;}if(btn.dataset.partyDelete){const id=btn.dataset.partyDelete;if(data.matches.some(m=>m.partyId===id))return;if(!confirm('このパーティを削除しますか？'))return;const old=data.parties;data.parties=old.filter(p=>p.id!==id);if(!saveData())data.parties=old;else{toast('パーティを削除しました');render()}return;}if(btn.hasAttribute('data-update-opponent')){renderRecord();toast('選出候補を更新しました');return;}if(btn.dataset.result){if(draft.result!==btn.dataset.result){draft.result=btn.dataset.result;draft.tags=[];}renderRecord();return;}if(btn.dataset.toggleMy){const mon=btn.dataset.toggleMy;draft.myPicks=draft.myPicks.includes(mon)?draft.myPicks.filter(m=>m!==mon):draft.myPicks.length<3?[...draft.myPicks,mon]:draft.myPicks;renderRecord();return;}if(btn.dataset.toggleOpp){const mon=btn.dataset.toggleOpp;draft.opponentPicks=draft.opponentPicks.includes(mon)?draft.opponentPicks.filter(m=>m!==mon):draft.opponentPicks.length<3?[...draft.opponentPicks,mon]:draft.opponentPicks;renderRecord();return;}if(btn.dataset.tag){const val=btn.dataset.tag;draft.tags=draft.tags.includes(val)?draft.tags.filter(t=>t!==val):[...draft.tags,val];renderRecord();return;}if(btn.hasAttribute('data-record-save')){persistMatch();return;}if(btn.hasAttribute('data-record-cancel')){draft=freshDraft();toast('編集を中止しました');setTab('history');return;}if(btn.dataset.editMatch){startEdit(btn.dataset.editMatch);return;}if(btn.dataset.deleteMatch){if(!confirm('この対戦記録を削除しますか？'))return;const old=data.matches;data.matches=old.filter(m=>m.id!==btn.dataset.deleteMatch);if(!saveData())data.matches=old;else{toast('対戦記録を削除しました');render()}return;}if(btn.id==='export'){const json=JSON.stringify({...data,exportedAt:new Date().toISOString()},null,2);const blob=new Blob([json],{type:'application/json;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='champions-battle-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);toast('バックアップを書き出しました');return;}if(btn.id==='import'){$('#import-file').click();return;}});
 document.addEventListener('change',e=>{const t=e.target;if(t.id==='record-party'){draft.partyId=t.value;draft.myPicks=[];draft.myLead='';renderRecord()}else if(t.matches('.opp-slot')){draft.opponent[Number(t.dataset.oppSlot)]=t.value.trim()}else if(t.id==='my-lead')draft.myLead=t.value;else if(t.id==='opp-lead')draft.oppLead=t.value;else if(t.id==='trouble')draft.trouble=t.value;else if(t.id==='opp-style')draft.style=t.value;else if(t.id==='analysis-party'){analysisParty=t.value;renderAnalysis()}else if(t.id==='analysis-mode'){analysisMode=t.value;renderAnalysis()}else if(t.id==='history-party'){historyParty=t.value;renderHistory()}else if(t.id==='history-result'){historyResult=t.value;renderHistory()}else if(t.id==='import-file'){const file=t.files?.[0];if(!file)return;file.text().then(text=>{let obj;try{obj=JSON.parse(text)}catch(_){alert('JSONファイルが読み取れませんでした');return;}if(!obj||!Array.isArray(obj.parties)||!Array.isArray(obj.matches)||obj.version!==1||obj.parties.some(p=>typeof p.id!=='string'||!Array.isArray(p.pokemon))||obj.matches.some(m=>typeof m.id!=='string'||typeof m.partyId!=='string')){alert('このアプリのバックアップファイルではないようです');return;}if(!confirm('現在のデータを、このファイルのデータで置き換えますか？\nこの操作は取り消せません。'))return;const previous=data;data={version:1,parties:obj.parties,matches:obj.matches};if(!saveData()){data=previous;return;}draft=freshDraft();toast('バックアップを復元しました');setTab('home')}).catch(()=>alert('ファイルを読み取れませんでした')).finally(()=>{t.value=''});}});
@@ -216,7 +239,7 @@ $('#picker-layer').addEventListener('click',e=>{if(e.target.id==='picker-layer')
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&pickerState)closePicker()});
 
 // ---- v0.3 form-aware UX, no external network calls ----
-const genderOptions=(val='unknown',name='')=>{const fixed=FORM_DB[name]?.gender;if(fixed)return `<option value=\"${fixed}\" selected>${displaySex(fixed)}</option>`;return [['unknown','性別未確認'],['male','♂ オス'],['female','♀ メス'],['none','性別なし']].map(([v,n])=>`<option value="${v}" ${v===val?'selected':''}>${n}</option>`).join('');};
+const genderOptions=(val='unknown',name='')=>{const fixed=FORM_DB[name]?.gender;if(fixed&&fixed!=='unknown')return `<option value=\"${fixed}\" selected>${displaySex(fixed)}</option>`;return [['unknown','性別未確認'],['male','♂ オス'],['female','♀ メス'],['none','性別なし']].map(([v,n])=>`<option value="${v}" ${v===val?'selected':''}>${n}</option>`).join('');};
 function matchVariantSummary(m){const parts=[];if(m.myMega?.to)parts.push(`自分：${h(m.myMega.to)}`);if(m.oppMega?.to)parts.push(`相手：${h(m.oppMega.to)}`);const opponentSex=Object.entries(m.oppGenders||{}).filter(([n,v])=>n&&v&&v!=='unknown').map(([n,v])=>h(n)+' '+displaySex(v));const mySex=Object.entries(m.myGenders||{}).filter(([n,v])=>n&&v&&v!=='unknown').map(([n,v])=>h(n)+' '+displaySex(v));if(mySex.length)parts.push('自分の性別：'+mySex.join('、'));if(opponentSex.length)parts.push('相手の性別：'+opponentSex.join('、'));return parts.length?`<p class="variant-history">確認した姿・性別：${parts.join(' ／ ')}</p>`:'';}
 let dexQuery='',dexSelected='',dexEdit='';
 const typeOptions=(value='')=>'<option value="">未登録</option>'+VALID_TYPES.map(t=>`<option value="${h(t)}" ${t===value?'selected':''}>${h(t)}</option>`).join('');
@@ -236,7 +259,7 @@ function renderDex(){const term=dexQuery.normalize('NFKC').trim().toLocaleLowerC
 function matchMegaBlock(label,which,picked){const mega=draft[which]||{from:'',to:''};const available=picked.filter(n=>megasFor(n).length);let valid=available.includes(mega.from);if(!valid){mega.from='';mega.to='';}const opts=mega.from?megasFor(mega.from):[];if(mega.to&&!opts.includes(mega.to))mega.to='';return `<div class="mega-block"><div class="group-label">${label}</div><div class="form-row"><label class="field">形態変化したモンスター<select data-mega-from="${which}"><option value="">未確認・記録なし</option>${available.map(n=>`<option value="${h(n)}" ${n===mega.from?'selected':''}>${h(n)}</option>`).join('')}</select></label><label class="field">確認できた形態変化後<select data-mega-to="${which}" ${!mega.from?'disabled':''}><option value="">未確認</option>${opts.map(n=>`<option value="${h(n)}" ${n===mega.to?'selected':''}>${h(n)}</option>`).join('')}</select></label></div>${mega.to?`<div class="form-mini">${formDetail(mega.to)}</div>`:''}</div>`;}
 function genderRecordBlock(){const party=data.parties.find(p=>p.id===draft.partyId);const my=draft.myPicks.map(n=>`<label class="field">${h(n)}<select data-gender-side="my" data-gender-name="${h(n)}">${genderOptions(draft.myGenders[n]||(party?.genders||[])[party.pokemon.indexOf(n)]||FORM_DB[n]?.gender||'unknown',n)}</select></label>`).join('');const opp=draft.opponentPicks.map(n=>`<label class="field">${h(n)}<select data-gender-side="opp" data-gender-name="${h(n)}">${genderOptions(draft.oppGenders[n]||FORM_DB[n]?.gender||'unknown',n)}</select></label>`).join('');return `<div class="gender-columns"><div><div class="group-label">自分の選出（性別）</div><div class="gender-list">${my||'<p class="muted small">選出を登録すると表示されます。</p>'}</div></div><div><div class="group-label">相手の確認済み選出（性別）</div><div class="gender-list">${opp||'<p class="muted small">確認した相手だけ記録できます。</p>'}</div></div></div>`;}
 const originalRecord=renderRecord;
-renderRecord=function(){originalRecord();if(!data.parties.length)return;const allowedMine=new Set(draft.myPicks),allowedOpp=new Set(draft.opponentPicks);if(draft.myMega?.from&&!allowedMine.has(draft.myMega.from))draft.myMega={from:'',to:''};if(draft.oppMega?.from&&!allowedOpp.has(draft.oppMega.from))draft.oppMega={from:'',to:''};$('#tab-record').insertAdjacentHTML('beforeend',`<div class="card" style="margin-top:17px"><h2>⑤ 姿・形態変化・性別 <span class="pill">任意</span></h2><p class="section-intro">見せ合いでは通常の名前を記録し、対戦中に形態変化を実際に確認したらここで指定。未確認は空欄でOK。</p><div class="grid two">${matchMegaBlock('自分の形態変化','myMega',draft.myPicks)}${matchMegaBlock('相手の形態変化','oppMega',draft.opponentPicks)}</div><div class="line"></div>${genderRecordBlock()}<p class="help">性別で種族値が異なるイエッサンなどは、6匹の名前選択時に性別別の専用候補を選ぶと、タイプ・種族値に反映されます。</p></div>`);};
+renderRecord=function(){originalRecord();if(!data.parties.length)return;const allowedMine=new Set(draft.myPicks),allowedOpp=new Set(draft.opponentPicks);if(draft.myMega?.from&&!allowedMine.has(draft.myMega.from))draft.myMega={from:'',to:''};if(draft.oppMega?.from&&!allowedOpp.has(draft.oppMega.from))draft.oppMega={from:'',to:''};$('#tab-record').insertAdjacentHTML('beforeend',`<div class="card" style="margin-top:17px"><h2>⑤ 姿・形態変化・性別 <span class="pill">任意</span></h2><p class="section-intro">見せ合いでは通常の名前を記録し、対戦中に形態変化を実際に確認したらここで指定。未確認は空欄でOK。</p><div class="grid two">${matchMegaBlock('自分の形態変化','myMega',draft.myPicks)}${matchMegaBlock('相手の形態変化','oppMega',draft.opponentPicks)}</div><div class="line"></div>${genderRecordBlock()}<p class="help">性別で性能が変わる種類は、6匹の名前選択時に性別別の専用候補を選ぶと、タイプ・種族値に反映されます。</p></div>`);};
 const originalAnalysis=renderAnalysis;
 renderAnalysis=function(){originalAnalysis();const matches=data.matches.filter(m=>analysisParty==='all'||m.partyId===analysisParty);const bySpecies=new Map(),byForm=new Map();for(const m of matches){for(const n of new Set(m.opponentPicks||[])){const sp=speciesOf(n);if(!bySpecies.has(sp))bySpecies.set(sp,{name:sp,n:0,w:0});const st=bySpecies.get(sp);st.n++;if(m.result==='win')st.w++;const target=m.oppMega?.from===n&&m.oppMega?.to?m.oppMega.to:n;if(!byForm.has(target))byForm.set(target,{name:target,n:0,w:0});const sf=byForm.get(target);sf.n++;if(m.result==='win')sf.w++;}}const order=values=>[...values].sort((a,b)=>b.n-a.n||a.name.localeCompare(b.name,'ja')).slice(0,12);const show=rows=>rows.length?rows.map(r=>`${barrow(r.name,r.w,r.n)}${FORM_DB[r.name]?`<div class="small muted" style="margin:-8px 0 12px">${(FORM_DB[r.name].types||[]).join(' / ')}</div>`:''}`).join(''):empty('分析対象がありません','相手の確認済み選出を記録してください。');$('#tab-analysis').insertAdjacentHTML('beforeend',`<div class="grid two" style="margin-top:17px"><div class="card"><h2>種類別の勝率 <span class="pill">確認済み選出</span></h2><p class="section-intro">複数フォームなどを同じ種類として合算。未確認の選出は含みません。</p>${show(order(bySpecies.values()))}</div><div class="card"><h2>姿・形態変化別の勝率</h2><p class="section-intro">形態変化が確認された試合のみ変身後に分類。未確認をメガ扱いしません。</p>${show(order(byForm.values()))}</div></div>`);};
 // Change controls are non-destructive: old saved arrays and match IDs stay untouched.
@@ -270,6 +293,132 @@ document.addEventListener('click',e=>{const btn=e.target.closest('button');if(!b
 // v0.3 restoration path also supports v0.4 catalog after the older handler restored parties/matches.
 // Use capture phase to handle imports atomically while preserving the previous format.
 document.addEventListener('change',e=>{const t=e.target;if(t.id!=='import-file')return;e.stopImmediatePropagation();const file=t.files?.[0];if(!file)return;if(file.size>5000000){alert('バックアップは5MBまでです');t.value='';return;}file.text().then(text=>{let obj=JSON.parse(text);if(!obj||obj.version!==1||!Array.isArray(obj.parties)||!Array.isArray(obj.matches)||obj.parties.some(p=>typeof p.id!=='string'||!Array.isArray(p.pokemon))||obj.matches.some(m=>typeof m.id!=='string'||typeof m.partyId!=='string'))throw Error('このアプリ用のバックアップではありません');const newDex=obj.personalDex?importEntries(obj.personalDex):null;if(!confirm('対戦記録・パーティをバックアップで置き換えます。'+(newDex?' 個人図鑑も置き換えます。':' 個人図鑑は現在のまま残ります。')+' 続けますか？'))return;const oldData=data,oldDex=dexEntries.slice();data={version:1,parties:obj.parties,matches:obj.matches};if(!saveData()){data=oldData;return;}if(newDex){dexEntries=newDex;if(!storePrivateDex()){data=oldData;saveData();dexEntries=oldDex;refreshRegistry();return;}}draft=freshDraft();toast('復元しました');setTab('home');}).catch(err=>alert(err.message||'JSONを読み取れませんでした')).finally(()=>{t.value='';});},true);
+
+// ---- Ver.0.5: Private-dex -> party -> battle integration. No game-specific names/data bundled. ----
+const DEFENSIVE_TYPES={
+ 'ノーマル':{weak:['かくとう'],resist:[],immune:['ゴースト']},
+ 'ほのお':{weak:['みず','じめん','いわ'],resist:['ほのお','くさ','こおり','むし','はがね','フェアリー'],immune:[]},
+ 'みず':{weak:['でんき','くさ'],resist:['ほのお','みず','こおり','はがね'],immune:[]},
+ 'でんき':{weak:['じめん'],resist:['でんき','ひこう','はがね'],immune:[]},
+ 'くさ':{weak:['ほのお','こおり','どく','ひこう','むし'],resist:['みず','でんき','くさ','じめん'],immune:[]},
+ 'こおり':{weak:['ほのお','かくとう','いわ','はがね'],resist:['こおり'],immune:[]},
+ 'かくとう':{weak:['ひこう','エスパー','フェアリー'],resist:['むし','いわ','あく'],immune:[]},
+ 'どく':{weak:['じめん','エスパー'],resist:['くさ','かくとう','どく','むし','フェアリー'],immune:[]},
+ 'じめん':{weak:['みず','くさ','こおり'],resist:['どく','いわ'],immune:['でんき']},
+ 'ひこう':{weak:['でんき','こおり','いわ'],resist:['くさ','かくとう','むし'],immune:['じめん']},
+ 'エスパー':{weak:['むし','ゴースト','あく'],resist:['かくとう','エスパー'],immune:[]},
+ 'むし':{weak:['ほのお','ひこう','いわ'],resist:['くさ','かくとう','じめん'],immune:[]},
+ 'いわ':{weak:['みず','くさ','かくとう','じめん','はがね'],resist:['ノーマル','ほのお','どく','ひこう'],immune:[]},
+ 'ゴースト':{weak:['ゴースト','あく'],resist:['どく','むし'],immune:['ノーマル','かくとう']},
+ 'ドラゴン':{weak:['こおり','ドラゴン','フェアリー'],resist:['ほのお','みず','でんき','くさ'],immune:[]},
+ 'あく':{weak:['かくとう','むし','フェアリー'],resist:['ゴースト','あく'],immune:['エスパー']},
+ 'はがね':{weak:['ほのお','かくとう','じめん'],resist:['ノーマル','くさ','こおり','ひこう','エスパー','むし','いわ','ドラゴン','はがね','フェアリー'],immune:['どく']},
+ 'フェアリー':{weak:['どく','はがね'],resist:['かくとう','むし','あく'],immune:['ドラゴン']}
+};
+function calcDamageMultiplier(attack,defending){
+ if(!Array.isArray(defending)||defending.length<1||defending.some(t=>!DEFENSIVE_TYPES[t]))return null;
+ let x=1;
+ for(const t of defending){const p=DEFENSIVE_TYPES[t];if(p.immune.includes(attack))return 0;if(p.weak.includes(attack))x*=2;if(p.resist.includes(attack))x*=0.5;}
+ return x;
+}
+function getTeamForm(p,i){
+ const base=p.pokemon?.[i]||'';
+ const proposed=Array.isArray(p.previewForms)?p.previewForms[i]:'';
+ return proposed&&megasFor(base).includes(proposed)?proposed:base;
+}
+const statBadge=entry=>entry?.stats?`<div class="team-stats">${entry.stats.map((v,i)=>`<span><small>${h(baseStatNames[i])}</small><b>${v}</b></span>`).join('')}</div>`:'<p class="small muted">種族値は未登録</p>';
+function monOverview(name,asForm=false){
+ const record=FORM_DB[name];
+ if(!record)return `<span class="muted small">図鑑データ未登録</span>`;
+ return `<div class="team-types">${TYPE_TEXT(record.types)}</div>${statBadge(record)}${asForm?'<p class="help">姿変更は相性計算用。実際の対戦の変化は対戦記録で指定してね。</p>':''}`;
+}
+function summarizeTeam(p){
+ const chosen=(p.pokemon||[]).map((n,i)=>getTeamForm(p,i));
+ const available=chosen.filter(n=>FORM_DB[n]?.types?.length);
+ const absent=chosen.length-available.length;
+ const rows=VALID_TYPES.map(type=>{
+  const values=available.map(n=>calcDamageMultiplier(type,FORM_DB[n].types)).filter(v=>v!==null);
+  return {type,weak:values.filter(x=>x>1).length,quad:values.filter(x=>x>=4).length,resist:values.filter(x=>x<1).length,immune:values.filter(x=>x===0).length};
+ }).sort((a,b)=>b.weak-a.weak||b.quad-a.quad||a.type.localeCompare(b.type,'ja'));
+ return {rows,available:available.length,absent,chosen};
+}
+function teamWeakness(p,full=false){
+ const s=summarizeTeam(p);
+ if(!s.available)return '<div class="notice">タイプ情報のあるモンスターがいません。「個人図鑑」からデータを取り込むと弱点分析が使えます。</div>';
+ const top=s.rows.filter(r=>r.weak).slice(0,4);
+ const head=`<div class="spaced"><b class="small">タイプ相性（防御面）</b><span class="pill">判定 ${s.available}/6匹</span></div>`;
+ const topHtml=top.length?`<div class="team-risk">${top.map(r=>`<span class="risk-chip"><i style="background:${TYPE_COLORS[r.type]}"></i>${h(r.type)} <b>${r.weak}匹に抜群</b>${r.quad?`（うち4倍${r.quad}）`:''}</span>`).join('')}</div>`:'<p class="small muted">タイプ上の弱点が重なる攻撃はありません。</p>';
+ const warning=s.absent?`<p class="help warn-text">※ ${s.absent}匹分はタイプ未登録のため集計から除外。全員のデータが揃うと結果が変わります。</p>`:'';
+ const matrix=`<div class="type-matrix"><div class="matrix-head"><span>受ける攻撃タイプ</span><span>抜群</span><span>半減以下</span><span>無効</span></div>${s.rows.map(r=>`<div class="matrix-row"><span><i style="background:${TYPE_COLORS[r.type]}"></i>${h(r.type)}</span><b class="${r.weak?'danger-text':''}">${r.weak}</b><b>${r.resist}</b><b>${r.immune}</b></div>`).join('')}</div>`;
+ return `${head}${topHtml}${warning}${full?`<details class="matrix-details"><summary>18タイプの耐性一覧を開く</summary>${matrix}</details>`:''}<p class="help">タイプ相性だけの参考値。特性・技・持ち物・天候などによる例外は計算していません。「抜群」は2倍以上、「半減以下」は0.5倍以下（無効も含む）です。</p>`;
+}
+function partyDisplay(p){
+ const ms=data.matches.filter(m=>m.partyId===p.id),s=summary(ms);
+ return `<div class="card team-party-card"><div class="spaced"><h2 style="margin:0">${h(p.name)}</h2><span class="pill">${s.n}戦 / 勝率 ${s.n?percent(s.w,s.n)+'%':'—'}</span></div>
+  <div class="team-members">${(p.pokemon||[]).map((mon,i)=>{
+   const opts=megasFor(mon),selected=getTeamForm(p,i);
+   return `<div class="team-member"><div class="spaced"><button type="button" class="mon-link" data-mon-detail="${h(selected)}">${typeMarks(selected)}${h(mon)}</button><span class="pill">${i+1}匹目</span></div>
+    ${selected!==mon?`<p class="form-caption">相性計算中の姿：${h(selected)}</p>`:''}
+    <div class="team-types">${FORM_DB[selected]?.types?.length?TYPE_TEXT(FORM_DB[selected].types):'<span class="muted small">タイプ未登録</span>'}</div>
+    ${statBadge(FORM_DB[selected])}
+    ${opts.length?`<label class="field team-control-label">相性計算用の姿<select data-team-form-id="${h(p.id)}" data-team-form-index="${i}"><option value="">通常の姿</option>${opts.map(m=>`<option value="${h(m)}" ${selected===m?'selected':''}>${h(m)}</option>`).join('')}</select></label>`:''}
+    <label class="field team-control-label">性別<select data-party-gender-id="${h(p.id)}" data-party-gender-slot="${i}" aria-label="${h(mon)}の性別">${genderOptions((p.genders||[])[i]||FORM_DB[mon]?.gender||'unknown',mon)}</select></label>
+   </div>`;}).join('')}</div>
+  <div class="team-analysis-box">${teamWeakness(p,true)}</div>
+  <div class="actions"><button type="button" class="button secondary small" data-party-use="${h(p.id)}">この構築で記録</button><button type="button" class="button danger small" data-party-delete="${h(p.id)}" ${s.n?'disabled title="対戦履歴がある構築は削除できません"':''}>削除</button></div>
+  ${s.n?'<p class="small muted">対戦履歴がある構築は削除できません。メンバー変更は新しい構築として登録してください。</p>':''}</div>`;
+}
+const oldRenderPartiesV05=renderParties;
+renderParties=function(){
+ oldRenderPartiesV05();
+ const content=$('#tab-parties');
+ const newGrid=content.querySelector('.grid.two > div:nth-child(2) > .grid');
+ if(newGrid)newGrid.innerHTML=data.parties.length?data.parties.map(partyDisplay).join(''):empty('登録済みパーティはありません','左側のフォームで6匹を登録してね。');
+ const fields=content.querySelector('#party-form .slots');
+ if(fields)fields.insertAdjacentHTML('afterend','<div id="party-draft-preview" class="draft-team-preview" aria-live="polite"></div>');
+ const intro=content.querySelector('#party-form')?.parentElement?.querySelector('.section-intro');
+ if(intro)intro.textContent='iPad内の個人図鑑から「選ぶ」で検索・登録できます。タイプと種族値を下にプレビュー表示します。';
+ renderDraftTeamPreview();
+};
+function renderDraftTeamPreview(){
+ const el=$('#party-draft-preview'),f=$('#party-form');if(!el||!f)return;
+ const mons=Array.from({length:6},(_,i)=>f.elements[`party-mon-${i}`]?.value.normalize('NFKC').trim()||'');
+ const count=mons.filter(Boolean).length;
+ if(!count){el.innerHTML='<p class="help">入力した名前と個人図鑑が一致すると、タイプ・種族値がここに表示されるよ。</p>';return;}
+ el.innerHTML=`<div class="spaced"><b class="small">登録前の確認</b><span class="pill">${count}/6匹</span></div><div class="draft-member-grid">${mons.map((n,i)=>n?`<div class="draft-member"><b>${i+1}. ${h(n)}</b><div class="team-types">${FORM_DB[n]?.types?.length?TYPE_TEXT(FORM_DB[n].types):'<span class="muted small">図鑑未登録</span>'}</div>${FORM_DB[n]?.stats?`<p class="small muted">合計 ${FORM_DB[n].stats.reduce((a,b)=>a+b,0)} / 素早さ ${FORM_DB[n].stats[5]}</p>`:''}</div>`:'').join('')}</div>`;
+}
+const oldApplyPokemonChoiceV05=applyPokemonChoice;
+applyPokemonChoice=function(name){const kind=pickerState?.kind;oldApplyPokemonChoiceV05(name);if(kind==='party')renderDraftTeamPreview();};
+const oldRenderRecordV05=renderRecord;
+renderRecord=function(){
+ oldRenderRecordV05();if(!data.parties.length)return;
+ const party=data.parties.find(p=>p.id===draft.partyId);
+ const rows=(xs)=>xs.filter(Boolean).map(n=>`<div class="battle-dex-row"><button class="mon-link" type="button" data-mon-detail="${h(n)}">${typeMarks(n)}${h(n)}</button><div class="small muted">${FORM_DB[n]?.types?.join(' / ')||'タイプ未登録'}${FORM_DB[n]?.stats?' ・ 素早さ種族値 '+FORM_DB[n].stats[5]:''}</div></div>`).join('');
+ $('#tab-record').insertAdjacentHTML('beforeend',`<div class="card" style="margin-top:17px"><h2>⑥ 個人図鑑と連動する対戦メモ</h2><p class="section-intro">自分・相手の名前をタップすると個人図鑑の詳細を見られます。表示中のタイプ・種族値は個人図鑑の登録内容です。</p><div class="grid two"><div><div class="group-label">自分の選出</div>${rows(draft.myPicks)||'<p class="help">まだ選出していません。</p>'}</div><div><div class="group-label">相手の見せ合い</div>${rows(draft.opponent)||'<p class="help">相手の名前を入力すると表示されます。</p>'}</div></div>${party?'<p class="help">パーティの相性分析は左メニューの「パーティ」から確認できます。</p>':''}</div>`);
+};
+const oldRenderAnalysisV05=renderAnalysis;
+renderAnalysis=function(){
+ oldRenderAnalysisV05();
+ const selection=data.parties.filter(p=>analysisParty==='all'||p.id===analysisParty);
+ if(!selection.length)return;
+ const panels=selection.map(p=>`<div class="card"><h2>${h(p.name)}：タイプ相性</h2>${teamWeakness(p,analysisParty!=='all')}</div>`).join('');
+ $('#tab-analysis').insertAdjacentHTML('beforeend',`<div class="team-analysis-section"><h2>構築のタイプ相性（個人図鑑連動）</h2><p class="section-intro">上の構築フィルターと連動。選択した構築は18タイプの詳細まで確認できます。</p><div class="grid ${selection.length>1?'two':''}">${panels}</div></div>`);
+};
+// Live form preview; do not rewrite party data while the user is typing.
+document.addEventListener('input',e=>{if(e.target.closest('#party-form')&&e.target.name?.startsWith('party-mon-'))renderDraftTeamPreview();});
+document.addEventListener('change',e=>{
+ const t=e.target;if(t.dataset.teamFormId===undefined)return;
+ const p=data.parties.find(p=>p.id===t.dataset.teamFormId);if(!p)return;
+ const idx=Number(t.dataset.teamFormIndex),base=p.pokemon?.[idx],value=t.value;
+ if(!Number.isInteger(idx)||idx<0||idx>=6||!base)return;
+ if(value&&!megasFor(base).includes(value)){toast('選べない姿です');renderParties();return;}
+ const prior=Array.isArray(p.previewForms)?p.previewForms.slice():Array(6).fill('');
+ const proposed=prior.slice();proposed[idx]=value;
+ if(proposed.filter(Boolean).length>1){alert('相性計算用のメガシンカは1匹ずつ選択してください。');renderParties();return;}
+ p.previewForms=proposed;
+ if(!saveData()){p.previewForms=prior;return;}
+ toast('相性計算用の姿を保存しました');renderParties();
+});
 
 setTab('home');
 </script>
