@@ -87,7 +87,7 @@
 <body>
 <div class="app">
   <aside>
-    <div class="brand"><span class="eyebrow">UNOFFICIAL BATTLE TRACKER</span><strong>⚡ 対戦ノート</strong><small>シングル対戦分析 ・ <span class="version-badge">Ver.0.5</span></small></div>
+    <div class="brand"><span class="eyebrow">UNOFFICIAL BATTLE TRACKER</span><strong>⚡ 対戦ノート</strong><small>シングル対戦分析 ・ <span class="version-badge">Ver.0.5.1</span></small></div>
     <nav class="nav" aria-label="メインメニュー">
       <button type="button" data-tab="home" class="active"><span class="symbol">⌂</span>ホーム</button>
       <button type="button" data-tab="record"><span class="symbol">✚</span>対戦記録</button>
@@ -188,15 +188,25 @@ let pickerState=null;
 const normalizeMon=v=>String(v??'').normalize('NFKC').trim();
 function pickerValues(){if(!pickerState)return [];if(pickerState.kind==='party'){const f=$('#party-form');return f?Array.from({length:6},(_,i)=>f.elements[`party-mon-${i}`]?.value.trim()||''):[];}return [...draft.opponent];}
 function pokemonCandidates(){const used=[...data.parties.flatMap(p=>p.pokemon||[]),...data.matches.flatMap(m=>m.opponent||[]),...draft.opponent];const f=$('#party-form');if(f)used.push(...Array.from({length:6},(_,i)=>f.elements[`party-mon-${i}`]?.value||''));return [...new Set([...used,...SPECIES].map(normalizeMon).filter(Boolean))];}
-function openPicker(kind,slot){pickerState={kind,slot,query:''};$('#picker-layer').classList.remove('hidden');$('#picker-layer').setAttribute('aria-hidden','false');$('#picker-title').textContent=(kind==='party'?'自分のパーティ':'相手のパーティ')+'：モンスター選択';$('#picker-query').value='';renderPicker();requestAnimationFrame(()=>$('#picker-query').focus());}
+function openPicker(kind,slot){pickerState={kind,slot,query:'',limit:90};$('#picker-layer').classList.remove('hidden');$('#picker-layer').setAttribute('aria-hidden','false');$('#picker-title').textContent=(kind==='party'?'自分のパーティ':'相手のパーティ')+'：モンスター選択';$('#picker-query').value='';renderPicker();requestAnimationFrame(()=>$('#picker-query').focus());}
 function closePicker(){pickerState=null;$('#picker-layer').classList.add('hidden');$('#picker-layer').setAttribute('aria-hidden','true');}
-function renderPicker(){if(!pickerState)return;const values=pickerValues();const q=normalizeMon(pickerState.query).toLocaleLowerCase('ja-JP');const existing=new Set(values.map(normalizeMon).filter(Boolean));const found=pokemonCandidates().filter(n=>n.toLocaleLowerCase('ja-JP').includes(q)).sort((a,b)=>Number(existing.has(b))-Number(existing.has(a))||a.localeCompare(b,'ja')).slice(0,90);
+function renderPicker(){
+ if(!pickerState)return;
+ const values=pickerValues(),q=normalizeMon(pickerState.query).toLocaleLowerCase('ja-JP');
+ const existing=new Set(values.map(normalizeMon).filter(Boolean));
+ const all=pokemonCandidates().filter(n=>n.toLocaleLowerCase('ja-JP').includes(q))
+   .sort((a,b)=>Number(existing.has(b))-Number(existing.has(a))||a.localeCompare(b,'ja'));
+ const found=all.slice(0,pickerState.limit||90);
  $('#picker-current').innerHTML=values.map((v,i)=>`<button type="button" class="picker-slot ${pickerState.slot===i?'active':''}" data-picker-slot="${i}">${i+1}. ${v?h(v):'未登録'}</button>`).join('');
- $('#picker-note').textContent=`${values.filter(Boolean).length}/6匹登録済み ｜ ${found.length}件の候補表示${q?'（絞り込み中）':''}。一覧は入力候補であり、対戦で使用可能かの保証ではありません。`;
- $('#picker-list').innerHTML=(q&&!pokemonCandidates().some(n=>n===normalizeMon(pickerState.query))?`<button type="button" class="picker-item picker-custom" data-pick-pokemon="${h(normalizeMon(pickerState.query))}"><span class="picker-monogram">＋</span><span class="picker-item-text">「${h(normalizeMon(pickerState.query))}」をそのまま登録</span></button>`:'')+found.map(n=>`<button type="button" class="picker-item" data-pick-pokemon="${h(n)}" ${existing.has(n)&&values[pickerState.slot]!==n?'disabled':''}><span class="picker-monogram">${h(n.slice(0,1))}</span><span class="picker-item-text"><span>${typeMarks(n)}${h(n)}</span><span class="muted" style="font-weight:500;font-size:.7rem">${h((TYPES[n]||[]).join(' / ')||'文字で登録')}${FORM_DB[n]?.stats?' ・ 種族値あり':''}</span></span></button>`).join('')||'<div class="picker-empty">候補はありません。検索欄の名前をそのまま登録できます。</div>';
+ $('#picker-note').textContent=`${values.filter(Boolean).length}/6匹登録済み ｜ 全${all.length}件中 ${found.length}件を表示。${all.length>found.length?'下の「さらに表示」か検索欄で探せます。':''}一覧は入力候補であり、対戦で使用可能かの保証ではありません。`;
+ const custom=q&&!pokemonCandidates().some(n=>n===normalizeMon(pickerState.query))
+  ?`<button type="button" class="picker-item picker-custom" data-pick-pokemon="${h(normalizeMon(pickerState.query))}"><span class="picker-monogram">＋</span><span class="picker-item-text">「${h(normalizeMon(pickerState.query))}」をそのまま登録</span></button>`:'';
+ const options=found.map(n=>`<button type="button" class="picker-item" data-pick-pokemon="${h(n)}" ${existing.has(n)&&values[pickerState.slot]!==n?'disabled':''}><span class="picker-monogram">${h(n.slice(0,1))}</span><span class="picker-item-text"><span>${typeMarks(n)}${h(n)}</span><span class="muted" style="font-weight:500;font-size:.7rem">${h((TYPES[n]||[]).join(' / ')||'文字で登録')}${FORM_DB[n]?.stats?' ・ 種族値あり':''}</span></span></button>`).join('');
+ const more=found.length<all.length?`<button type="button" data-picker-more class="button secondary" style="grid-column:1/-1;min-height:48px">さらに表示（残り${all.length-found.length}件）</button>`:'';
+ $('#picker-list').innerHTML=custom+options+more||'<div class="picker-empty">候補はありません。検索欄の名前をそのまま登録できます。</div>';
 }
 function applyPokemonChoice(name){if(!pickerState)return;const mon=normalizeMon(name);if(!mon||mon.length>50){toast('名前は1〜50文字で入力してください');return;}const vals=pickerValues();if(vals.some((v,i)=>i!==pickerState.slot&&normalizeMon(v)===mon)){toast('同じモンスターはすでに登録されています');return;}const {kind,slot}=pickerState;if(kind==='party'){const f=$('#party-form');if(!f){closePicker();return;}f.elements[`party-mon-${slot}`].value=mon;}else{draft.opponent[slot]=mon;renderRecord();}
- const next=pickerValues().findIndex((v,i)=>i!==slot&&!normalizeMon(v));if(next===-1){closePicker();toast('モンスターを登録しました');}else{pickerState.slot=next;pickerState.query='';$('#picker-query').value='';renderPicker();requestAnimationFrame(()=>$('#picker-query')?.focus());}}
+ const next=pickerValues().findIndex((v,i)=>i!==slot&&!normalizeMon(v));if(next===-1){closePicker();toast('モンスターを登録しました');}else{pickerState.slot=next;pickerState.query='';pickerState.limit=90;$('#picker-query').value='';renderPicker();requestAnimationFrame(()=>$('#picker-query')?.focus());}}
 
 const saveData=()=>{try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data));return true}catch(e){alert('保存できませんでした。端末の空き容量やSafariの設定を確認し、バックアップしてください。');return false}};
 const toast=msg=>{const el=$('#toast');el.textContent=msg;el.classList.remove('hidden');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.add('hidden'),3100)};
@@ -233,7 +243,7 @@ function persistMatch(){const party=data.parties.find(p=>p.id===draft.partyId);i
 function startEdit(id){const m=data.matches.find(m=>m.id===id);if(!m)return;draft={result:m.result,partyId:m.partyId,opponent:Array.from({length:6},(_,i)=>m.opponent?.[i]||''),myPicks:[...(m.myPicks||[])],opponentPicks:[...(m.opponentPicks||[])],myLead:m.myLead||'',oppLead:m.oppLead||'',trouble:m.trouble||'',style:m.style||'未分類',tags:[...(m.tags||[])],memo:m.memo||'',myMega:m.myMega||{from:'',to:''},oppMega:m.oppMega||{from:'',to:''},oppGenders:m.oppGenders||{},myGenders:m.myGenders||{},editId:m.id};setTab('record')}
 document.addEventListener('click',e=>{const btn=e.target.closest('button');if(!btn)return;if(btn.hasAttribute('data-picker-close')){closePicker();return;}if(btn.dataset.pickerSlot!==undefined){if(pickerState){pickerState.slot=Number(btn.dataset.pickerSlot);renderPicker();}return;}if(btn.dataset.pickPokemon!==undefined){applyPokemonChoice(btn.dataset.pickPokemon);return;}if(btn.dataset.openPicker!==undefined){openPicker(btn.dataset.openPicker,Number(btn.dataset.pickerIndex));return;}if(btn.dataset.tab){setTab(btn.dataset.tab);return;}if(btn.dataset.partyUse){draft=freshDraft();draft.partyId=btn.dataset.partyUse;setTab('record');return;}if(btn.dataset.partyDelete){const id=btn.dataset.partyDelete;if(data.matches.some(m=>m.partyId===id))return;if(!confirm('このパーティを削除しますか？'))return;const old=data.parties;data.parties=old.filter(p=>p.id!==id);if(!saveData())data.parties=old;else{toast('パーティを削除しました');render()}return;}if(btn.hasAttribute('data-update-opponent')){renderRecord();toast('選出候補を更新しました');return;}if(btn.dataset.result){if(draft.result!==btn.dataset.result){draft.result=btn.dataset.result;draft.tags=[];}renderRecord();return;}if(btn.dataset.toggleMy){const mon=btn.dataset.toggleMy;draft.myPicks=draft.myPicks.includes(mon)?draft.myPicks.filter(m=>m!==mon):draft.myPicks.length<3?[...draft.myPicks,mon]:draft.myPicks;renderRecord();return;}if(btn.dataset.toggleOpp){const mon=btn.dataset.toggleOpp;draft.opponentPicks=draft.opponentPicks.includes(mon)?draft.opponentPicks.filter(m=>m!==mon):draft.opponentPicks.length<3?[...draft.opponentPicks,mon]:draft.opponentPicks;renderRecord();return;}if(btn.dataset.tag){const val=btn.dataset.tag;draft.tags=draft.tags.includes(val)?draft.tags.filter(t=>t!==val):[...draft.tags,val];renderRecord();return;}if(btn.hasAttribute('data-record-save')){persistMatch();return;}if(btn.hasAttribute('data-record-cancel')){draft=freshDraft();toast('編集を中止しました');setTab('history');return;}if(btn.dataset.editMatch){startEdit(btn.dataset.editMatch);return;}if(btn.dataset.deleteMatch){if(!confirm('この対戦記録を削除しますか？'))return;const old=data.matches;data.matches=old.filter(m=>m.id!==btn.dataset.deleteMatch);if(!saveData())data.matches=old;else{toast('対戦記録を削除しました');render()}return;}if(btn.id==='export'){const json=JSON.stringify({...data,exportedAt:new Date().toISOString()},null,2);const blob=new Blob([json],{type:'application/json;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='champions-battle-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);toast('バックアップを書き出しました');return;}if(btn.id==='import'){$('#import-file').click();return;}});
 document.addEventListener('change',e=>{const t=e.target;if(t.id==='record-party'){draft.partyId=t.value;draft.myPicks=[];draft.myLead='';renderRecord()}else if(t.matches('.opp-slot')){draft.opponent[Number(t.dataset.oppSlot)]=t.value.trim()}else if(t.id==='my-lead')draft.myLead=t.value;else if(t.id==='opp-lead')draft.oppLead=t.value;else if(t.id==='trouble')draft.trouble=t.value;else if(t.id==='opp-style')draft.style=t.value;else if(t.id==='analysis-party'){analysisParty=t.value;renderAnalysis()}else if(t.id==='analysis-mode'){analysisMode=t.value;renderAnalysis()}else if(t.id==='history-party'){historyParty=t.value;renderHistory()}else if(t.id==='history-result'){historyResult=t.value;renderHistory()}else if(t.id==='import-file'){const file=t.files?.[0];if(!file)return;file.text().then(text=>{let obj;try{obj=JSON.parse(text)}catch(_){alert('JSONファイルが読み取れませんでした');return;}if(!obj||!Array.isArray(obj.parties)||!Array.isArray(obj.matches)||obj.version!==1||obj.parties.some(p=>typeof p.id!=='string'||!Array.isArray(p.pokemon))||obj.matches.some(m=>typeof m.id!=='string'||typeof m.partyId!=='string')){alert('このアプリのバックアップファイルではないようです');return;}if(!confirm('現在のデータを、このファイルのデータで置き換えますか？\nこの操作は取り消せません。'))return;const previous=data;data={version:1,parties:obj.parties,matches:obj.matches};if(!saveData()){data=previous;return;}draft=freshDraft();toast('バックアップを復元しました');setTab('home')}).catch(()=>alert('ファイルを読み取れませんでした')).finally(()=>{t.value=''});}});
-document.addEventListener('input',e=>{const t=e.target;if(t.id==='picker-query'){if(pickerState){pickerState.query=t.value;renderPicker();}return;}if(t.matches('.opp-slot'))draft.opponent[Number(t.dataset.oppSlot)]=t.value;else if(t.id==='memo')draft.memo=t.value;else if(t.id==='history-query'){historyQuery=t.value;const list=$('#history-list');if(list){let matches=[...data.matches].sort((a,b)=>new Date(b.date)-new Date(a.date)).filter(m=>(historyParty==='all'||m.partyId===historyParty)&&(historyResult==='all'||m.result===historyResult));if(historyQuery.trim()){const q=historyQuery.trim().toLowerCase();matches=matches.filter(m=>[...opponents(m),...(m.myPicks||[]),...(m.opponentPicks||[]),m.memo||'',...(m.tags||[]),nameOfParty(m.partyId)].join(' ').toLowerCase().includes(q));}list.innerHTML=matches.length?matches.map(m=>detailCard(m,true)).join(''):empty('条件に一致する記録はありません','検索語を変えてみてね。')}}});
+document.addEventListener('input',e=>{const t=e.target;if(t.id==='picker-query'){if(pickerState){pickerState.query=t.value;pickerState.limit=90;renderPicker();}return;}if(t.matches('.opp-slot'))draft.opponent[Number(t.dataset.oppSlot)]=t.value;else if(t.id==='memo')draft.memo=t.value;else if(t.id==='history-query'){historyQuery=t.value;const list=$('#history-list');if(list){let matches=[...data.matches].sort((a,b)=>new Date(b.date)-new Date(a.date)).filter(m=>(historyParty==='all'||m.partyId===historyParty)&&(historyResult==='all'||m.result===historyResult));if(historyQuery.trim()){const q=historyQuery.trim().toLowerCase();matches=matches.filter(m=>[...opponents(m),...(m.myPicks||[]),...(m.opponentPicks||[]),m.memo||'',...(m.tags||[]),nameOfParty(m.partyId)].join(' ').toLowerCase().includes(q));}list.innerHTML=matches.length?matches.map(m=>detailCard(m,true)).join(''):empty('条件に一致する記録はありません','検索語を変えてみてね。')}}});
 document.addEventListener('submit',e=>{if(e.target.id!=='party-form')return;e.preventDefault();const f=e.target;const name=f.elements['party-name'].value.trim();const mons=Array.from({length:6},(_,i)=>f.elements[`party-mon-${i}`].value.trim());if(!name||mons.some(m=>!m)){alert('パーティ名と6匹をすべて入力してください');return;}if(mons.some(mon=>FORM_DB[mon]?.mega)){alert('パーティの6匹は形態変化前の名前で登録してね。');return;}if(new Set(mons.map(speciesOf)).size!==6){alert('同じ種類のモンスターを複数登録できません。姿違いも同じ種類として扱います。');return;}const item={id:uid(),name,pokemon:mons,genders:Array.from({length:6},(_,i)=>f.elements[`party-gender-${i}`].value),createdAt:new Date().toISOString()};data.parties.push(item);if(!saveData()){data.parties.pop();return;}draft.partyId=item.id;toast('パーティを登録しました');renderParties()});
 $('#picker-layer').addEventListener('click',e=>{if(e.target.id==='picker-layer')closePicker()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&pickerState)closePicker()});
@@ -294,7 +304,7 @@ document.addEventListener('click',e=>{const btn=e.target.closest('button');if(!b
 // Use capture phase to handle imports atomically while preserving the previous format.
 document.addEventListener('change',e=>{const t=e.target;if(t.id!=='import-file')return;e.stopImmediatePropagation();const file=t.files?.[0];if(!file)return;if(file.size>5000000){alert('バックアップは5MBまでです');t.value='';return;}file.text().then(text=>{let obj=JSON.parse(text);if(!obj||obj.version!==1||!Array.isArray(obj.parties)||!Array.isArray(obj.matches)||obj.parties.some(p=>typeof p.id!=='string'||!Array.isArray(p.pokemon))||obj.matches.some(m=>typeof m.id!=='string'||typeof m.partyId!=='string'))throw Error('このアプリ用のバックアップではありません');const newDex=obj.personalDex?importEntries(obj.personalDex):null;if(!confirm('対戦記録・パーティをバックアップで置き換えます。'+(newDex?' 個人図鑑も置き換えます。':' 個人図鑑は現在のまま残ります。')+' 続けますか？'))return;const oldData=data,oldDex=dexEntries.slice();data={version:1,parties:obj.parties,matches:obj.matches};if(!saveData()){data=oldData;return;}if(newDex){dexEntries=newDex;if(!storePrivateDex()){data=oldData;saveData();dexEntries=oldDex;refreshRegistry();return;}}draft=freshDraft();toast('復元しました');setTab('home');}).catch(err=>alert(err.message||'JSONを読み取れませんでした')).finally(()=>{t.value='';});},true);
 
-// ---- Ver.0.5: Private-dex -> party -> battle integration. No game-specific names/data bundled. ----
+// ---- Ver.0.5.1: Private-dex -> party -> battle integration. No game-specific names/data bundled. ----
 const DEFENSIVE_TYPES={
  'ノーマル':{weak:['かくとう'],resist:[],immune:['ゴースト']},
  'ほのお':{weak:['みず','じめん','いわ'],resist:['ほのお','くさ','こおり','むし','はがね','フェアリー'],immune:[]},
@@ -418,6 +428,41 @@ document.addEventListener('change',e=>{
  p.previewForms=proposed;
  if(!saveData()){p.previewForms=prior;return;}
  toast('相性計算用の姿を保存しました');renderParties();
+});
+
+
+// ---- v0.5.1: accessible pagination and safe copy-to-new party ----
+const renderPartiesBeforeCopy=renderParties;
+renderParties=function(){
+ renderPartiesBeforeCopy();
+ const cards=[...document.querySelectorAll('#tab-parties .team-party-card')];
+ for(let i=0;i<cards.length;i++){
+  const p=data.parties[i];if(!p)continue;
+  const area=cards[i].querySelector('.actions');if(!area)continue;
+  const btn=document.createElement('button');btn.type='button';btn.className='button secondary small';
+  btn.dataset.partyClone=p.id;btn.textContent='コピーして修正';
+  area.insertBefore(btn,area.querySelector('[data-party-delete]'));
+ }
+ const note=document.querySelector('#tab-parties .section-intro');
+ if(note)note.textContent+=' 登録済みの構築は「コピーして修正」で再登録できます。過去の試合は変更しません。';
+};
+document.addEventListener('click',e=>{
+ const more=e.target.closest('button[data-picker-more]');
+ if(more&&pickerState){pickerState.limit=(pickerState.limit||90)+90;renderPicker();return;}
+ const btn=e.target.closest('button[data-party-clone]');if(!btn)return;
+ const p=data.parties.find(x=>x.id===btn.dataset.partyClone);if(!p)return;
+ setTab('parties');
+ const f=document.querySelector('#party-form');if(!f)return;
+ f.elements['party-name'].value=(p.name+' 修正版').slice(0,80);
+ for(let i=0;i<6;i++){
+  const mon=p.pokemon[i]||'';
+  f.elements[`party-mon-${i}`].value=mon;
+  const g=f.elements[`party-gender-${i}`];
+  if(g)g.value=(p.genders||[])[i]||'unknown';
+ }
+ renderDraftTeamPreview();
+ f.scrollIntoView({block:'start',behavior:'instant'});
+ toast('左のフォームに6匹をコピーしました。変更して新しい構築として保存できます。');
 });
 
 setTab('home');
