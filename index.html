@@ -120,12 +120,17 @@
 @media(max-width:850px){.freq-control-row{grid-template-columns:1fr}.freq-trio{gap:5px}.freq-stat{padding:8px 7px}.freq-coverage{gap:6px}.freq-cover-card{padding:9px}}
 @media(max-width:520px){.freq-coverage{grid-template-columns:1fr}.freq-cover-card{display:flex;align-items:center;gap:9px}.freq-cover-card small,.freq-cover-card b,.freq-cover-card p{margin:0}.freq-trio{grid-template-columns:1fr}.freq-stat{display:grid;grid-template-columns:1.1fr 1fr auto;align-items:center;gap:6px}.freq-stat span,.freq-stat small{margin:0}.freq-minibar{display:none}}
 
-  </style>
+  
+    .history-pages{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin:16px 0 0;padding-top:16px;border-top:1px solid var(--line)}
+    .storage-label{font-weight:800;font-size:.82rem}.storage-ok{color:#128269}.storage-warn{color:#bc6b1a}.storage-error{color:#b53f54}
+    .v07-progress{margin-bottom:16px;padding:13px 17px;background:#fff;border:1px solid var(--line);border-radius:12px;display:flex;align-items:center;gap:10px}.v07-progress .dot{width:9px;height:9px;background:#7768e9;border-radius:50%}
+    #v07-storage-panel{margin-top:18px}.v07-info-row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid #e8ecf5}.v07-info-row:last-child{border:0}
+</style>
 </head>
 <body>
 <div class="app">
   <aside>
-    <div class="brand"><span class="eyebrow">UNOFFICIAL BATTLE TRACKER</span><strong>⚡ 対戦ノート</strong><small>シングル対戦分析 ・ <span class="version-badge">Ver.0.6</span></small></div>
+    <div class="brand"><span class="eyebrow">UNOFFICIAL BATTLE TRACKER</span><strong>⚡ 対戦ノート</strong><small>シングル対戦分析 ・ <span class="version-badge">Ver.0.7</span></small></div>
     <nav class="nav" aria-label="メインメニュー">
       <button type="button" data-tab="home" class="active"><span class="symbol">⌂</span>ホーム</button>
       <button type="button" data-tab="record"><span class="symbol">✚</span>対戦記録</button>
@@ -137,7 +142,7 @@
     </nav>
     <div class="side-note">このアプリは非公式の個人用ツールです。データはこの端末・このアプリの保存領域に保管されます。定期的にバックアップしてください。</div>
   </aside>
-  <main>
+  <main><div id="v07-progress" class="v07-progress" role="status"><span class="dot"></span><strong id="v07-progress-text">保存データを読み込み中です…</strong></div>
     <div class="top"><div><div class="eyebrow" style="color:#6556e8">MY BATTLE DATABASE</div><h1 id="page-title">対戦ダッシュボード</h1><p id="page-sub">対戦成績を積み重ねて、得意・苦手を見つけよう。</p></div><div class="top-tag">● 端末内保存</div></div>
     <section id="tab-home" class="tab-content active"></section>
     <section id="tab-record" class="tab-content"></section>
@@ -246,7 +251,7 @@ function renderPicker(){
 function applyPokemonChoice(name){if(!pickerState)return;const mon=normalizeMon(name);if(!mon||mon.length>50){toast('名前は1〜50文字で入力してください');return;}const vals=pickerValues();if(vals.some((v,i)=>i!==pickerState.slot&&normalizeMon(v)===mon)){toast('同じモンスターはすでに登録されています');return;}const {kind,slot}=pickerState;if(kind==='party'){const f=$('#party-form');if(!f){closePicker();return;}f.elements[`party-mon-${slot}`].value=mon;}else{draft.opponent[slot]=mon;renderRecord();}
  const next=pickerValues().findIndex((v,i)=>i!==slot&&!normalizeMon(v));if(next===-1){closePicker();toast('モンスターを登録しました');}else{pickerState.slot=next;pickerState.query='';pickerState.limit=90;$('#picker-query').value='';renderPicker();requestAnimationFrame(()=>$('#picker-query')?.focus());}}
 
-const saveData=()=>{try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data));return true}catch(e){alert('保存できませんでした。端末の空き容量やSafariの設定を確認し、バックアップしてください。');return false}};
+let saveData=()=>{try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data));return true}catch(e){alert('保存できませんでした。端末の空き容量やSafariの設定を確認し、バックアップしてください。');return false}};
 const toast=msg=>{const el=$('#toast');el.textContent=msg;el.classList.remove('hidden');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.add('hidden'),3100)};
 const nameOfParty=id=>data.parties.find(p=>p.id===id)?.name||'削除済みの構築';
 const opponents=m=>Array.isArray(m.opponent)?m.opponent.filter(Boolean):[];
@@ -274,14 +279,18 @@ const tagMap=new Map();for(const m of matches){for(const t of m.tags||[]){const 
 const combinations=new Map();for(const m of matches){if((m.myPicks||[]).length!==3)continue;const k=[...m.myPicks].sort((a,b)=>a.localeCompare(b,'ja')).join('・');if(!combinations.has(k))combinations.set(k,{name:k,n:0,w:0});const a=combinations.get(k);a.n++;if(m.result==='win')a.w++}const comb=[...combinations.values()].sort((a,b)=>b.n-a.n).slice(0,8);
 const barlist=(array,subtitle)=>array.length?array.map(r=>barrow(r.name,r.w,r.n)).join(''):empty('集計できる対戦がありません',subtitle);
 $('#tab-analysis').innerHTML=`<div class="card" style="margin-bottom:17px"><div class="form-row"><label class="field">分析するパーティ<select id="analysis-party"><option value="all">すべてのパーティ</option>${parties.map(p=>`<option value="${h(p.id)}" ${analysisParty===p.id?'selected':''}>${h(p.name)}</option>`).join('')}</select></label><label class="field">相手モンスターの集計基準<select id="analysis-mode"><option value="preview" ${analysisMode==='preview'?'selected':''}>見せ合いにいた</option><option value="picked" ${analysisMode==='picked'?'selected':''}>実際に出てきた（確認分）</option><option value="trouble" ${analysisMode==='trouble'?'selected':''}>特に苦戦した</option></select></label></div></div>${statCards}<div class="grid two"><div class="card"><h2>苦手な相手 <span class="pill">勝率が低い順</span></h2><p class="section-intro">3試合以上記録がある相手のみ表示。相手を含む試合での勝率です。</p>${barlist(tough,'最低3試合のデータが集まると表示します。')}</div><div class="card"><h2>得意な相手 <span class="pill">勝率が高い順</span></h2><p class="section-intro">勝率が高い順。試合数も参考にしてね。</p>${barlist(strong,'最低3試合のデータが集まると表示します。')}</div><div class="card"><h2>選出3匹の成績</h2>${barlist(comb,'自分の選出3匹を記録すると集計できます。')}</div><div class="card"><h2>勝因・敗因タグ</h2>${tags.length?tags.map(([t,n])=>`<div class="spaced" style="padding:9px 0;border-bottom:1px solid #edf0f6"><span class="small">${h(t)}</span><strong>${n}回</strong></div>`).join(''):empty('タグの記録がありません','対戦記録の勝因・敗因を選んでね。')}</div></div><div class="notice" style="margin-top:17px">数値は記録された試合の単純集計です。「相手の6匹にいた」と「その相手が敗因だった」は別の意味。少ない試合数の勝率から即断しないようにしてね。</div>`}
-function renderHistory(){let matches=[...data.matches].sort((a,b)=>new Date(b.date)-new Date(a.date));if(historyParty!=='all')matches=matches.filter(m=>m.partyId===historyParty);if(historyResult!=='all')matches=matches.filter(m=>m.result===historyResult);if(historyQuery.trim()){const q=historyQuery.trim().toLowerCase();matches=matches.filter(m=>[...opponents(m),...(m.myPicks||[]),...(m.opponentPicks||[]),m.memo||'',...(m.tags||[]),nameOfParty(m.partyId)].join(' ').toLowerCase().includes(q));}
-$('#tab-history').innerHTML=`<div class="card"><div class="form-row"><label class="field">構築で絞り込む<select id="history-party"><option value="all">すべてのパーティ</option>${data.parties.map(p=>`<option value="${h(p.id)}" ${historyParty===p.id?'selected':''}>${h(p.name)}</option>`).join('')}</select></label><label class="field">勝敗<select id="history-result"><option value="all">すべて</option><option value="win" ${historyResult==='win'?'selected':''}>勝利のみ</option><option value="loss" ${historyResult==='loss'?'selected':''}>敗北のみ</option></select></label></div><div style="margin-top:12px"><label class="field">モンスター・タグ・メモから検索<input type="search" id="history-query" placeholder="例：相手名" value="${h(historyQuery)}"></label></div><div class="spaced" style="margin-top:23px"><h2 style="margin:0">対戦一覧 <span class="pill">${matches.length}件</span></h2></div><div id="history-list">${matches.length?matches.map(m=>detailCard(m,true)).join(''):empty('条件に一致する記録はありません','試合を記録するか、絞り込み条件を変更してね。')}</div></div>`}
+let historyPage=0;
+const HISTORY_PAGE_SIZE=60;
+function getFilteredHistory(){let matches=[...data.matches].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));if(historyParty!=='all')matches=matches.filter(m=>m.partyId===historyParty);if(historyResult!=='all')matches=matches.filter(m=>m.result===historyResult);if(historyQuery.trim()){const q=historyQuery.trim().toLocaleLowerCase('ja-JP');matches=matches.filter(m=>[...opponents(m),...(m.myPicks||[]),...(m.opponentPicks||[]),m.memo||'',...(m.tags||[]),nameOfParty(m.partyId)].join(' ').toLocaleLowerCase('ja-JP').includes(q));}return matches;}
+function historyListing(matches){const count=matches.length,maxPage=Math.max(0,Math.ceil(count/HISTORY_PAGE_SIZE)-1);historyPage=Math.max(0,Math.min(historyPage,maxPage));const from=historyPage*HISTORY_PAGE_SIZE;const sliced=matches.slice(from,from+HISTORY_PAGE_SIZE);const controls=count>HISTORY_PAGE_SIZE?`<div class="history-pages"><span class="small muted">${from+1}〜${Math.min(count,from+HISTORY_PAGE_SIZE)} / ${count}件</span><button type="button" class="button secondary small" data-history-step="-1" ${historyPage===0?'disabled':''}>前へ</button><button type="button" class="button secondary small" data-history-step="1" ${historyPage>=maxPage?'disabled':''}>次へ</button></div>`:'';return `${sliced.length?sliced.map(m=>detailCard(m,true)).join(''):empty('条件に一致する記録はありません','試合を記録するか、絞り込み条件を変更してね。')}${controls}`;}
+function renderHistory(){const matches=getFilteredHistory();$('#tab-history').innerHTML=`<div class="card"><div class="form-row"><label class="field">構築で絞り込む<select id="history-party"><option value="all">すべてのパーティ</option>${data.parties.map(p=>`<option value="${h(p.id)}" ${historyParty===p.id?'selected':''}>${h(p.name)}</option>`).join('')}</select></label><label class="field">勝敗<select id="history-result"><option value="all">すべて</option><option value="win" ${historyResult==='win'?'selected':''}>勝利のみ</option><option value="loss" ${historyResult==='loss'?'selected':''}>敗北のみ</option></select></label></div><div style="margin-top:12px"><label class="field">モンスター・タグ・メモから検索<input type="search" id="history-query" placeholder="例：相手名" value="${h(historyQuery)}"></label></div><div class="spaced" style="margin-top:23px"><h2 style="margin:0">対戦一覧 <span class="pill">${matches.length}件</span></h2></div><div id="history-list">${historyListing(matches)}</div></div>`}
+
 function renderBackup(){$('#tab-backup').innerHTML=`<div class="grid two"><div class="card"><h2>バックアップを書き出す</h2><p class="muted small">登録した構築・対戦履歴・個人図鑑を1つのJSONファイルに保存します。iPadの「ファイル」アプリやiCloud Driveなど安全な場所に保管してね。</p><p class="small">現在：<strong>${data.parties.length}構築 / ${data.matches.length}試合</strong></p><button type="button" class="button" id="export">JSONをダウンロード</button></div><div class="card"><h2>バックアップから復元</h2><p class="muted small">バックアップJSONから復元します。対戦記録は置き換え、個人図鑑はバックアップに含まれる場合のみ置き換えます。</p><button type="button" class="button secondary" id="import">JSONファイルを選択</button></div></div><div class="notice" style="margin-top:17px"><strong>大切：</strong>記録は今使っているブラウザ／ホーム画面アプリの保存領域にあります。Safariのデータ削除、端末変更、プライベートブラウズなどで失われることがあります。Safariとホーム画面アプリで保存領域が分かれる場合もあります。定期的にJSONバックアップを取ってください。GitHubに対戦データは自動送信されません。</div>`}
-function persistMatch(){const party=data.parties.find(p=>p.id===draft.partyId);if(!party){alert('パーティを選んでください');return;}const opponent=draft.opponent.map(s=>s.trim());if(new Set(opponent.filter(Boolean)).size!==opponent.filter(Boolean).length){alert('相手のパーティに同じ名前が複数あります。確認してください。');return;}const payload={id:draft.editId||uid(),date:draft.editId?(data.matches.find(m=>m.id===draft.editId)?.date||new Date().toISOString()):new Date().toISOString(),partyId:draft.partyId,result:draft.result,opponent,myPicks:[...draft.myPicks],opponentPicks:[...draft.opponentPicks],myLead:draft.myLead,oppLead:draft.oppLead,trouble:draft.trouble,style:draft.style,tags:[...draft.tags],memo:draft.memo.trim(),myMega:{...draft.myMega},oppMega:{...draft.oppMega},oppGenders:{...draft.oppGenders,...Object.fromEntries(draft.opponentPicks.filter(n=>FORM_DB[n]?.gender&&FORM_DB[n].gender!=='unknown').map(n=>[n,FORM_DB[n].gender]))},myGenders:{...draft.myGenders,...Object.fromEntries(draft.myPicks.filter(n=>FORM_DB[n]?.gender&&FORM_DB[n].gender!=='unknown').map(n=>[n,FORM_DB[n].gender]))}};let previous=JSON.stringify(data.matches);if(draft.editId){const idx=data.matches.findIndex(m=>m.id===draft.editId);if(idx>=0)data.matches[idx]=payload;else data.matches.push(payload)}else data.matches.push(payload);if(!saveData()){data.matches=JSON.parse(previous);return;}draft=freshDraft();draft.partyId=party.id;toast('対戦記録を保存したよ！');setTab('home')}
+function persistMatch(){const party=data.parties.find(p=>p.id===draft.partyId);if(!party){alert('パーティを選んでください');return;}const opponent=draft.opponent.map(s=>s.trim());if(new Set(opponent.filter(Boolean)).size!==opponent.filter(Boolean).length){alert('相手のパーティに同じ名前が複数あります。確認してください。');return;}const payload={id:draft.editId||uid(),date:draft.editId?(data.matches.find(m=>m.id===draft.editId)?.date||new Date().toISOString()):new Date().toISOString(),partyId:draft.partyId,result:draft.result,opponent,myPicks:[...draft.myPicks],opponentPicks:[...draft.opponentPicks],myLead:draft.myLead,oppLead:draft.oppLead,trouble:draft.trouble,style:draft.style,tags:[...draft.tags],memo:draft.memo.trim(),myMega:{...draft.myMega},oppMega:{...draft.oppMega},oppGenders:{...draft.oppGenders,...Object.fromEntries(draft.opponentPicks.filter(n=>FORM_DB[n]?.gender&&FORM_DB[n].gender!=='unknown').map(n=>[n,FORM_DB[n].gender]))},myGenders:{...draft.myGenders,...Object.fromEntries(draft.myPicks.filter(n=>FORM_DB[n]?.gender&&FORM_DB[n].gender!=='unknown').map(n=>[n,FORM_DB[n].gender]))}};const editIndex=draft.editId?data.matches.findIndex(m=>m.id===draft.editId):-1;const original=editIndex>=0?data.matches[editIndex]:null;if(editIndex>=0)data.matches[editIndex]=payload;else data.matches.push(payload);if(!saveData()){if(editIndex>=0)data.matches[editIndex]=original;else data.matches.pop();return;}draft=freshDraft();draft.partyId=party.id;toast('対戦記録を保存したよ！');setTab('home')}
 function startEdit(id){const m=data.matches.find(m=>m.id===id);if(!m)return;draft={result:m.result,partyId:m.partyId,opponent:Array.from({length:6},(_,i)=>m.opponent?.[i]||''),myPicks:[...(m.myPicks||[])],opponentPicks:[...(m.opponentPicks||[])],myLead:m.myLead||'',oppLead:m.oppLead||'',trouble:m.trouble||'',style:m.style||'未分類',tags:[...(m.tags||[])],memo:m.memo||'',myMega:m.myMega||{from:'',to:''},oppMega:m.oppMega||{from:'',to:''},oppGenders:m.oppGenders||{},myGenders:m.myGenders||{},editId:m.id};setTab('record')}
 document.addEventListener('click',e=>{const btn=e.target.closest('button');if(!btn)return;if(btn.hasAttribute('data-picker-close')){closePicker();return;}if(btn.dataset.pickerSlot!==undefined){if(pickerState){pickerState.slot=Number(btn.dataset.pickerSlot);renderPicker();}return;}if(btn.dataset.pickPokemon!==undefined){applyPokemonChoice(btn.dataset.pickPokemon);return;}if(btn.dataset.openPicker!==undefined){openPicker(btn.dataset.openPicker,Number(btn.dataset.pickerIndex));return;}if(btn.dataset.tab){setTab(btn.dataset.tab);return;}if(btn.dataset.partyUse){draft=freshDraft();draft.partyId=btn.dataset.partyUse;setTab('record');return;}if(btn.dataset.partyDelete){const id=btn.dataset.partyDelete;if(data.matches.some(m=>m.partyId===id))return;if(!confirm('このパーティを削除しますか？'))return;const old=data.parties;data.parties=old.filter(p=>p.id!==id);if(!saveData())data.parties=old;else{toast('パーティを削除しました');render()}return;}if(btn.hasAttribute('data-update-opponent')){renderRecord();toast('選出候補を更新しました');return;}if(btn.dataset.result){if(draft.result!==btn.dataset.result){draft.result=btn.dataset.result;draft.tags=[];}renderRecord();return;}if(btn.dataset.toggleMy){const mon=btn.dataset.toggleMy;draft.myPicks=draft.myPicks.includes(mon)?draft.myPicks.filter(m=>m!==mon):draft.myPicks.length<3?[...draft.myPicks,mon]:draft.myPicks;renderRecord();return;}if(btn.dataset.toggleOpp){const mon=btn.dataset.toggleOpp;draft.opponentPicks=draft.opponentPicks.includes(mon)?draft.opponentPicks.filter(m=>m!==mon):draft.opponentPicks.length<3?[...draft.opponentPicks,mon]:draft.opponentPicks;renderRecord();return;}if(btn.dataset.tag){const val=btn.dataset.tag;draft.tags=draft.tags.includes(val)?draft.tags.filter(t=>t!==val):[...draft.tags,val];renderRecord();return;}if(btn.hasAttribute('data-record-save')){persistMatch();return;}if(btn.hasAttribute('data-record-cancel')){draft=freshDraft();toast('編集を中止しました');setTab('history');return;}if(btn.dataset.editMatch){startEdit(btn.dataset.editMatch);return;}if(btn.dataset.deleteMatch){if(!confirm('この対戦記録を削除しますか？'))return;const old=data.matches;data.matches=old.filter(m=>m.id!==btn.dataset.deleteMatch);if(!saveData())data.matches=old;else{toast('対戦記録を削除しました');render()}return;}if(btn.id==='export'){const json=JSON.stringify({...data,exportedAt:new Date().toISOString()},null,2);const blob=new Blob([json],{type:'application/json;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='champions-battle-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);toast('バックアップを書き出しました');return;}if(btn.id==='import'){$('#import-file').click();return;}});
 document.addEventListener('change',e=>{const t=e.target;if(t.id==='record-party'){draft.partyId=t.value;draft.myPicks=[];draft.myLead='';renderRecord()}else if(t.matches('.opp-slot')){draft.opponent[Number(t.dataset.oppSlot)]=t.value.trim()}else if(t.id==='my-lead')draft.myLead=t.value;else if(t.id==='opp-lead')draft.oppLead=t.value;else if(t.id==='trouble')draft.trouble=t.value;else if(t.id==='opp-style')draft.style=t.value;else if(t.id==='analysis-party'){analysisParty=t.value;renderAnalysis()}else if(t.id==='analysis-mode'){analysisMode=t.value;renderAnalysis()}else if(t.id==='history-party'){historyParty=t.value;renderHistory()}else if(t.id==='history-result'){historyResult=t.value;renderHistory()}else if(t.id==='import-file'){const file=t.files?.[0];if(!file)return;file.text().then(text=>{let obj;try{obj=JSON.parse(text)}catch(_){alert('JSONファイルが読み取れませんでした');return;}if(!obj||!Array.isArray(obj.parties)||!Array.isArray(obj.matches)||obj.version!==1||obj.parties.some(p=>typeof p.id!=='string'||!Array.isArray(p.pokemon))||obj.matches.some(m=>typeof m.id!=='string'||typeof m.partyId!=='string')){alert('このアプリのバックアップファイルではないようです');return;}if(!confirm('現在のデータを、このファイルのデータで置き換えますか？\nこの操作は取り消せません。'))return;const previous=data;data={version:1,parties:obj.parties,matches:obj.matches};if(!saveData()){data=previous;return;}draft=freshDraft();toast('バックアップを復元しました');setTab('home')}).catch(()=>alert('ファイルを読み取れませんでした')).finally(()=>{t.value=''});}});
-document.addEventListener('input',e=>{const t=e.target;if(t.id==='picker-query'){if(pickerState){pickerState.query=t.value;pickerState.limit=90;renderPicker();}return;}if(t.matches('.opp-slot'))draft.opponent[Number(t.dataset.oppSlot)]=t.value;else if(t.id==='memo')draft.memo=t.value;else if(t.id==='history-query'){historyQuery=t.value;const list=$('#history-list');if(list){let matches=[...data.matches].sort((a,b)=>new Date(b.date)-new Date(a.date)).filter(m=>(historyParty==='all'||m.partyId===historyParty)&&(historyResult==='all'||m.result===historyResult));if(historyQuery.trim()){const q=historyQuery.trim().toLowerCase();matches=matches.filter(m=>[...opponents(m),...(m.myPicks||[]),...(m.opponentPicks||[]),m.memo||'',...(m.tags||[]),nameOfParty(m.partyId)].join(' ').toLowerCase().includes(q));}list.innerHTML=matches.length?matches.map(m=>detailCard(m,true)).join(''):empty('条件に一致する記録はありません','検索語を変えてみてね。')}}});
+document.addEventListener('input',e=>{const t=e.target;if(t.id==='picker-query'){if(pickerState){pickerState.query=t.value;pickerState.limit=90;renderPicker();}return;}if(t.matches('.opp-slot'))draft.opponent[Number(t.dataset.oppSlot)]=t.value;else if(t.id==='memo')draft.memo=t.value;else if(t.id==='history-query'){historyQuery=t.value;const list=$('#history-list');if(list){let matches=[...data.matches].sort((a,b)=>new Date(b.date)-new Date(a.date)).filter(m=>(historyParty==='all'||m.partyId===historyParty)&&(historyResult==='all'||m.result===historyResult));if(historyQuery.trim()){const q=historyQuery.trim().toLowerCase();matches=matches.filter(m=>[...opponents(m),...(m.myPicks||[]),...(m.opponentPicks||[]),m.memo||'',...(m.tags||[]),nameOfParty(m.partyId)].join(' ').toLowerCase().includes(q));}historyPage=0;list.innerHTML=historyListing(matches)}}});
 document.addEventListener('submit',e=>{if(e.target.id!=='party-form')return;e.preventDefault();const f=e.target;const name=f.elements['party-name'].value.trim();const mons=Array.from({length:6},(_,i)=>f.elements[`party-mon-${i}`].value.trim());if(!name||mons.some(m=>!m)){alert('パーティ名と6匹をすべて入力してください');return;}if(mons.some(mon=>FORM_DB[mon]?.mega)){alert('パーティの6匹は形態変化前の名前で登録してね。');return;}if(new Set(mons.map(speciesOf)).size!==6){alert('同じ種類のモンスターを複数登録できません。姿違いも同じ種類として扱います。');return;}const item={id:uid(),name,pokemon:mons,genders:Array.from({length:6},(_,i)=>f.elements[`party-gender-${i}`].value),createdAt:new Date().toISOString()};data.parties.push(item);if(!saveData()){data.parties.pop();return;}draft.partyId=item.id;toast('パーティを登録しました');renderParties()});
 $('#picker-layer').addEventListener('click',e=>{if(e.target.id==='picker-layer')closePicker()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&pickerState)closePicker()});
@@ -337,10 +346,10 @@ document.addEventListener('change',e=>{if(e.target.id!=='dex-import-file')return
 // 全体バックアップには個人図鑑も同梱。古いバックアップの復元時には図鑑を消さない。
 const exportLegacy=document.getElementById('export');
 // delegated listener on document captures first so the previous v0.3 click handler will not run.
-document.addEventListener('click',e=>{const btn=e.target.closest('button');if(!btn||btn.id!=='export')return;e.stopImmediatePropagation();downloadJson({version:1,parties:data.parties,matches:data.matches,personalDex:{format:'personal-dex-v1',entries:dexEntries},exportedAt:new Date().toISOString()},'battle-note-full-backup-'+new Date().toISOString().slice(0,10)+'.json');toast('対戦記録＋個人図鑑を書き出しました');},true);
+// Ver.0.7: full-backup export handled by the new IndexedDB-aware controller.
 // v0.3 restoration path also supports v0.4 catalog after the older handler restored parties/matches.
 // Use capture phase to handle imports atomically while preserving the previous format.
-document.addEventListener('change',e=>{const t=e.target;if(t.id!=='import-file')return;e.stopImmediatePropagation();const file=t.files?.[0];if(!file)return;if(file.size>5000000){alert('バックアップは5MBまでです');t.value='';return;}file.text().then(text=>{let obj=JSON.parse(text);if(!obj||obj.version!==1||!Array.isArray(obj.parties)||!Array.isArray(obj.matches)||obj.parties.some(p=>typeof p.id!=='string'||!Array.isArray(p.pokemon))||obj.matches.some(m=>typeof m.id!=='string'||typeof m.partyId!=='string'))throw Error('このアプリ用のバックアップではありません');const newDex=obj.personalDex?importEntries(obj.personalDex):null;if(!confirm('対戦記録・パーティをバックアップで置き換えます。'+(newDex?' 個人図鑑も置き換えます。':' 個人図鑑は現在のまま残ります。')+' 続けますか？'))return;const oldData=data,oldDex=dexEntries.slice();data={version:1,parties:obj.parties,matches:obj.matches};if(!saveData()){data=oldData;return;}if(newDex){dexEntries=newDex;if(!storePrivateDex()){data=oldData;saveData();dexEntries=oldDex;refreshRegistry();return;}}draft=freshDraft();toast('復元しました');setTab('home');}).catch(err=>alert(err.message||'JSONを読み取れませんでした')).finally(()=>{t.value='';});},true);
+// Ver.0.7: full-backup import handled by the new atomic restore controller.
 
 // ---- Ver.0.5.1: Private-dex -> party -> battle integration. No game-specific names/data bundled. ----
 const DEFENSIVE_TYPES={
@@ -545,7 +554,7 @@ function frequencySection(){
  }).join('');
  const resultRows=snap.rows.length?rows:'<div class="empty"><strong>まだ対象のポケモン記録がありません</strong><div class="small">対戦記録で相手の6匹・確認できた選出・先発を登録すると、ここに表示されます。</div></div>';
  const more=snap.rows.length>12?`<div class="freq-actions"><button type="button" class="button secondary" data-freq-more>${frequencyShowAll?'上位12件だけ表示':`残り${snap.rows.length-12}件も表示`}</button></div>`:'';
- return `<div class="card freq-section" id="freq-section"><div class="freq-top"><div><div class="freq-eyebrow">OPPONENT FREQUENCY / Ver.0.6</div><h2>相手の出現・選出・先発ランキング</h2><p class="section-intro" style="margin:7px 0 0">勝ち負けに関係なく、記録済みの相手の傾向を集計。上の「分析するパーティ」で切り替えできます。</p></div><span class="pill">${snap.games.length}試合を対象</span></div>
+ return `<div class="card freq-section" id="freq-section"><div class="freq-top"><div><div class="freq-eyebrow">OPPONENT FREQUENCY / Ver.0.7</div><h2>相手の出現・選出・先発ランキング</h2><p class="section-intro" style="margin:7px 0 0">勝ち負けに関係なく、記録済みの相手の傾向を集計。上の「分析するパーティ」で切り替えできます。</p></div><span class="pill">${snap.games.length}試合を対象</span></div>
  <div class="freq-control-row"><label class="field">自分の先発で絞り込む<select class="generic" id="freq-own-lead"><option value="all">指定しない（先発未記録も含む）</option>${ownLeads.map(n=>`<option value="${h(n)}" ${frequencyOwnLead===n?'selected':''}>${h(n)}を先発にした試合</option>`).join('')}</select></label><label class="field">種類・姿のまとめ方<select class="generic" id="freq-group"><option value="form" ${frequencyGrouping==='form'?'selected':''}>姿ごとに分ける</option><option value="species" ${frequencyGrouping==='species'?'selected':''}>同じ種類でまとめる</option></select></label></div>
  <div class="freq-coverage">${coverage}</div><div class="freq-pills">${modeButtons}</div><div class="help">割合の分母は、その項目が1匹以上記録された試合数。先発・選出未記録を「出なかった」とは扱いません。特に「実際に確認」は、見なかったポケモンを不選出と断定しない参考値です。</div>
  <div class="freq-list" aria-live="polite">${resultRows}</div>${more}<div class="notice" style="margin-top:15px">ランキングは記録に基づく出現傾向です。先発率と「見せ合いにいたときの先発割合」は分母が異なります。メガシンカ後の姿が確認された場合でも、見せ合い・先発は記録された名前を使います。</div></div>`;
@@ -578,7 +587,151 @@ document.addEventListener('change',e=>{
  if(e.target.id==='freq-own-lead'){frequencyOwnLead=e.target.value;frequencyShowAll=false;renderAnalysis();}
 });
 
-setTab('home');
+// ---------- Ver.0.7: local-first IndexedDB storage, legacy migration and backup ----------
+const V07_DB_NAME='battle-note-v07-idb';
+const V07_DB_VERSION=1;
+let v07db=null,v07Ready=false,v07Mode='loading',v07Error='',v07Pending=0;
+let v07Queue=Promise.resolve();
+let v07SavedSignatures={parties:new Map(),matches:new Map(),dex:new Map()};
+const v07LegacySave=saveData;
+const v07LegacyDexSave=storePrivateDex;
+const v07ObjectKey={parties:'id',matches:'id',dex:'name'};
+function v07Status(msg,mode='ok'){
+ const line=document.getElementById('v07-progress');const body=document.getElementById('v07-progress-text');
+ if(!line||!body)return;
+ line.hidden=false;line.style.display='flex';body.textContent=msg;
+ line.style.borderColor=mode==='error'?'#e8a0aa':mode==='warn'?'#e9ca91':'#cfe5dc';
+ line.style.background=mode==='error'?'#fff1f2':mode==='warn'?'#fff8e8':'#effaf5';
+}
+function v07QueuedStatus(){
+ if(v07Error){v07Status('⚠ 保存に失敗しました。画面を閉じず、すぐに「保存設定」からバックアップを作ってください。','error');return;}
+ if(v07Mode==='idb')v07Status(v07Pending?'保存中…（完了するまでは画面を閉じないでください）':'✓ IndexedDBに保存済み（iPad内）');
+ else if(v07Mode==='legacy')v07Status('⚠ IndexedDBを利用できません。旧方式で動作中。バックアップを取ってください。','warn');
+}
+function v07Open(){return new Promise((resolve,reject)=>{
+ if(!('indexedDB' in window)){reject(new Error('IndexedDBに対応していません'));return;}
+ const r=indexedDB.open(V07_DB_NAME,V07_DB_VERSION);
+ r.onupgradeneeded=()=>{const d=r.result;
+  for(const [name,key] of [['parties','id'],['matches','id'],['dex','name'],['meta','key']])if(!d.objectStoreNames.contains(name)){const o=d.createObjectStore(name,{keyPath:key});if(name==='matches'){o.createIndex('partyId','partyId',{unique:false});o.createIndex('date','date',{unique:false});o.createIndex('result','result',{unique:false});}if(name==='dex')o.createIndex('species','species',{unique:false});}
+ };
+ r.onsuccess=()=>{const d=r.result;d.onversionchange=()=>{d.close();v07Status('別のタブで保存形式が変更されました。再読み込みしてください。','warn')};resolve(d)};
+ r.onerror=()=>reject(r.error||new Error('DBのオープンに失敗'));
+ r.onblocked=()=>reject(new Error('別のタブで使用中です。タブを閉じて再読み込みしてください。'));
+});}
+function v07Req(req){return new Promise((resolve,reject)=>{req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||new Error('保存データの読み込みに失敗'));});}
+function v07GetAll(store){return v07Req(v07db.transaction(store,'readonly').objectStore(store).getAll());}
+function v07Transaction(storeNames,callback){return new Promise((resolve,reject)=>{
+ let tx;
+ try{tx=v07db.transaction(storeNames,'readwrite');callback(tx);}
+ catch(e){try{tx?.abort()}catch(_){}reject(e);return;}
+ tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error||new Error('保存に失敗しました'));tx.onabort=()=>reject(tx.error||new Error('保存が中断されました'));
+});}
+function v07RecordSignatures(store,rows){return new Map(rows.map(x=>[String(x[v07ObjectKey[store]]),JSON.stringify(x)]));}
+function v07ResetSignatures(){v07SavedSignatures={parties:v07RecordSignatures('parties',data.parties),matches:v07RecordSignatures('matches',data.matches),dex:v07RecordSignatures('dex',dexEntries)};}
+function v07Diff(store,rows){const before=v07SavedSignatures[store],after=new Map(),upserts=[];const key=v07ObjectKey[store];
+ for(const item of rows){const id=String(item[key]);const str=JSON.stringify(item);after.set(id,str);if(before.get(id)!==str)upserts.push(JSON.parse(str));}
+ const removes=[...before.keys()].filter(k=>!after.has(k));return {store,upserts,removes,after};
+}
+function v07QueueChange(changes){
+ if(v07Error){alert('保存処理に問題があります。先にバックアップを書き出してください。');return false;}
+ const changed=changes.filter(c=>c.upserts.length||c.removes.length);
+ if(!changed.length)return true;
+ for(const c of changes)v07SavedSignatures[c.store]=c.after;
+ v07Pending++;v07QueuedStatus();
+ // All writes are serialized; transactions change only added/edited/deleted records.
+ v07Queue=v07Queue.then(()=>v07Transaction(changed.map(c=>c.store),tx=>{
+  for(const c of changed){const store=tx.objectStore(c.store);for(const id of c.removes)store.delete(id);for(const x of c.upserts)store.put(x);}
+ })).then(()=>{v07Pending--;v07QueuedStatus();}).catch(err=>{v07Pending--;v07Error=String(err?.message||err);console.error('IndexedDB保存エラー',err);v07QueuedStatus();});
+ return true;
+}
+function v07SaveData(){if(v07Mode!=='idb')return v07LegacySave();return v07QueueChange([v07Diff('parties',data.parties),v07Diff('matches',data.matches)]);}
+function v07SaveDex(){if(v07Mode!=='idb')return v07LegacyDexSave();const ok=v07QueueChange([v07Diff('dex',dexEntries)]);if(ok)refreshRegistry();return ok;}
+async function v07ReplaceEntire(nextData,nextDex){
+ if(v07Mode==='idb'){
+  await v07Queue;
+  if(v07Error)throw new Error('以前の保存が失敗しているため、復元を中止しました。');
+  await v07Transaction(['parties','matches','dex','meta'],tx=>{
+   for(const name of ['parties','matches','dex'])tx.objectStore(name).clear();
+   for(const p of nextData.parties)tx.objectStore('parties').put(p);
+   for(const m of nextData.matches)tx.objectStore('matches').put(m);
+   for(const e of nextDex)tx.objectStore('dex').put(e);
+   tx.objectStore('meta').put({key:'initialized',value:true,at:new Date().toISOString()});
+  });
+ }else{
+  // On older browsers preserve the original fallback. Fail before changing the UI on quota errors.
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(nextData));
+  localStorage.setItem(DEX_KEY,JSON.stringify({format:'personal-dex-v1',entries:nextDex}));
+ }
+ data=nextData;dexEntries=nextDex;refreshRegistry();v07ResetSignatures();draft=freshDraft();v07QueuedStatus();setTab('home');
+}
+function v07ValidateBackup(obj){
+ if(!obj||obj.version!==1||!Array.isArray(obj.parties)||!Array.isArray(obj.matches))throw new Error('対戦ノート用のバックアップではありません。');
+ if(obj.parties.length>20000||obj.matches.length>150000)throw new Error('記録数が多すぎるため、安全のため取り込みを中止しました。');
+ const ids=new Set(),mids=new Set();
+ for(const p of obj.parties){if(!p||typeof p.id!=='string'||!p.id||!Array.isArray(p.pokemon)||p.pokemon.length>6||p.pokemon.some(x=>typeof x!=='string')||ids.has(p.id))throw new Error('パーティデータが不正または重複しています。');ids.add(p.id);}
+ for(const m of obj.matches){if(!m||typeof m.id!=='string'||!m.id||typeof m.partyId!=='string'||!['win','loss'].includes(m.result)||mids.has(m.id))throw new Error('対戦記録が不正または重複しています。');mids.add(m.id);}
+ const newDex=obj.personalDex?importEntries(obj.personalDex):dexEntries.slice();
+ return {nextData:{version:1,parties:obj.parties,matches:obj.matches},nextDex:newDex,hasDex:!!obj.personalDex};
+}
+async function v07InitDB(){
+ v07db=await v07Open();
+ const marker=await v07Req(v07db.transaction('meta','readonly').objectStore('meta').get('initialized'));
+ if(!marker?.value){
+  v07Status(`旧データを移行中…（${data.matches.length}試合・${data.parties.length}構築・図鑑${dexEntries.length}件）`);
+  await v07Transaction(['parties','matches','dex','meta'],tx=>{
+   for(const p of data.parties)tx.objectStore('parties').put(p);
+   for(const m of data.matches)tx.objectStore('matches').put(m);
+   for(const e of dexEntries)tx.objectStore('dex').put(e);
+   tx.objectStore('meta').put({key:'initialized',value:true,at:new Date().toISOString()});
+  });
+  const counts=await Promise.all(['parties','matches','dex'].map(n=>v07Req(v07db.transaction(n).objectStore(n).count())));
+  if(counts[0]!==data.parties.length||counts[1]!==data.matches.length||counts[2]!==dexEntries.length)throw new Error('移行した件数が一致しません。旧データは消していません。');
+ }else{
+  // Once migrated, IndexedDB is authoritative; old localStorage values are retained, but never reused over newer data.
+  const [parties,matches,entries]=await Promise.all([v07GetAll('parties'),v07GetAll('matches'),v07GetAll('dex')]);
+  data={version:1,parties,matches};dexEntries=entries.map(cleanEntry).filter(Boolean);refreshRegistry();
+ }
+ v07Mode='idb';saveData=v07SaveData;storePrivateDex=v07SaveDex;v07ResetSignatures();
+}
+async function initV07(){
+ try{await v07InitDB();}catch(e){console.warn('IndexedDBへの移行ができませんでした',e);v07db?.close();v07db=null;v07Mode='legacy';v07Error='';v07Status('⚠ IndexedDBが利用できません。旧方式のまま起動します。バックアップを取ってください。','warn');}
+ v07Ready=true;v07QueuedStatus();render();
+}
+// Preserve existing screen controls while extending backup with migration status and capacity information.
+const v07OldRenderBackup=renderBackup;
+renderBackup=function(){v07OldRenderBackup();const node=$('#tab-backup');if(!node)return;node.insertAdjacentHTML('afterbegin',`<div class="card" id="v07-storage-panel"><h2>保存データの状態 <span class="pill">Ver.0.7</span></h2><div class="v07-info-row"><span>保存方式</span><strong class="storage-label ${v07Mode==='idb'?'storage-ok':'storage-warn'}">${v07Mode==='idb'?'IndexedDB（iPad内）':v07Mode==='legacy'?'旧方式（localStorage）':'確認中'}</strong></div><div class="v07-info-row"><span>対戦記録</span><strong>${data.matches.length.toLocaleString('ja-JP')}試合</strong></div><div class="v07-info-row"><span>登録パーティ / 個人図鑑</span><strong>${data.parties.length}件 / ${dexEntries.length}件</strong></div><div class="v07-info-row"><span>書き込み状況</span><strong>${v07Error?'⚠ 保存エラー':v07Pending?'保存処理中':'保存済み'}</strong></div><div class="help" style="margin-top:12px">移行前の旧データは自動削除しません。IndexedDBの保存容量は端末・Safariの状態によって異なり、試合数が無制限になるわけではありません。</div></div><div class="notice" style="margin-top:16px"><strong>新しいiPadへの引き継ぎ：</strong>「JSONをダウンロード」で全データを書き出す → ファイルをAirDropやiCloud Driveで移す → 新端末で同じアプリを開き「JSONファイルを選択」で復元。取り込み前に新端末のデータもバックアップしてね。</div>`);
+ if(navigator.storage?.estimate){navigator.storage.estimate().then(r=>{const n=document.getElementById('v07-storage-panel');if(!n)return;const f=x=>x>=1024*1024*1024?(x/(1024**3)).toFixed(1)+' GiB':(x/(1024**2)).toFixed(1)+' MiB';if(Number.isFinite(r.usage)&&Number.isFinite(r.quota))n.insertAdjacentHTML('beforeend',`<p class="help">ブラウザが報告する推定ストレージ使用量：${f(r.usage)} / 推定割り当て ${f(r.quota)}（対戦ノート専用の容量ではありません）</p>`)}).catch(()=>{});}
+};
+// Replace old export/import handlers. Intercept in capture phase before the v0.6 bubble handlers.
+document.addEventListener('click',e=>{
+ const btn=e.target.closest('button');if(!btn||btn.id!=='export')return;
+ e.stopImmediatePropagation();e.preventDefault();if(!v07Ready)return;
+ if(v07Pending){alert('まだ保存処理中です。画面上部に「保存済み」と表示されてからバックアップしてください。');return;}
+ try{
+  const body={version:1,backupFormat:'battle-note-full-v07',exportedAt:new Date().toISOString(),parties:data.parties,matches:data.matches,personalDex:{format:'personal-dex-v1',entries:dexEntries}};
+  // Keep the browser download in the original click event for iPad Safari compatibility.
+  downloadJson(body,'battle-note-v07-full-'+new Date().toISOString().slice(0,10)+'.json');
+  toast('全データをJSONに書き出しました。iPadの「ファイル」に保存してね。');
+ }catch(err){alert('バックアップを作れませんでした：'+String(err?.message||err));}
+},true);
+document.addEventListener('change',async e=>{
+ const t=e.target;if(t.id!=='import-file')return;
+ e.stopImmediatePropagation();e.preventDefault();const file=t.files?.[0];if(!file)return;
+ if(!v07Ready){alert('保存データの準備が終わってからやり直してください。');t.value='';return;}
+ if(file.size>100*1024*1024){alert('バックアップは最大100MiBまで対応します。');t.value='';return;}
+ try{
+  const obj=JSON.parse(await file.text());const {nextData,nextDex,hasDex}=v07ValidateBackup(obj);
+  const msg=`${nextData.matches.length.toLocaleString('ja-JP')}試合・${nextData.parties.length}構築を復元します。${hasDex?'個人図鑑も復元します。':'個人図鑑は今のまま残ります。'}\n現在の記録は置き換わります。先にバックアップを保存しましたか？`;
+  if(!confirm(msg))return;
+  v07Status('バックアップを復元中…画面を閉じないでください。');
+  await v07ReplaceEntire(nextData,nextDex);
+  toast('バックアップを復元しました！');
+ }catch(err){alert('復元できませんでした。データは変更していません。\n'+String(err?.message||err));v07QueuedStatus();}
+ finally{t.value='';}
+},true);
+document.addEventListener('click',e=>{const btn=e.target.closest('button[data-history-step]');if(!btn)return;historyPage+=Number(btn.dataset.historyStep);renderHistory();});
+
+initV07();
 </script>
 </body>
 </html>
