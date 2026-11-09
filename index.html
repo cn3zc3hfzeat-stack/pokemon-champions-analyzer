@@ -82,12 +82,50 @@
 @media(max-width:720px){.team-members{grid-template-columns:1fr}}
 @media(max-width:440px){.draft-member-grid{grid-template-columns:1fr}.type-matrix .matrix-row,.type-matrix .matrix-head{font-size:.69rem}}
 
+/* v0.6: opponent appearance / observed / lead analytics */
+.freq-section{border:1px solid #dedff9;background:linear-gradient(180deg,#fff 0%,#fcfcff 100%);margin:17px 0 20px}
+.freq-top{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:9px}
+.freq-eyebrow{font-size:.69rem;color:#6657d7;font-weight:850;letter-spacing:.09em;margin-bottom:6px}
+.freq-top h2{margin:0;font-size:1.24rem}
+.freq-control-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:15px 0}
+.freq-coverage{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:17px 0}
+.freq-cover-card{border:1px solid #e5e8f1;border-radius:12px;background:#f7f8fd;padding:13px}
+.freq-cover-card small{display:block;color:#67758c;font-size:.74rem;font-weight:750;margin-bottom:7px}
+.freq-cover-card b{font-size:1.24rem;color:#202c47}
+.freq-cover-card p{color:#758198;font-size:.7rem;margin:5px 0 0}
+.freq-pills{display:flex;gap:7px;flex-wrap:wrap;margin:13px 0}
+.freq-mode{border:1px solid #dfe2ed;border-radius:100px;padding:10px 13px;color:#606d85;background:#fff;font-size:.79rem;font-weight:800;min-height:44px}
+.freq-mode.active{border-color:#7563ec;background:#efedff;color:#5545c8}
+.freq-entry{border:1px solid #e5e8f2;background:#fff;border-radius:13px;padding:13px;margin:10px 0}
+.freq-entry-name{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px}
+.freq-rank{font-size:.79rem;font-weight:850;color:#6756d8;background:#f1efff;border-radius:8px;min-width:31px;height:31px;display:inline-flex;align-items:center;justify-content:center}
+.freq-entry-name strong{font-size:.92rem;overflow-wrap:anywhere}
+.freq-entry-name .pill{font-size:.69rem}
+.freq-trio{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.freq-stat{padding:9px 10px;background:#f7f8fc;border-radius:9px;min-width:0}
+.freq-stat.active{background:#f0edff;outline:1px solid #d3cbff}
+.freq-stat span{font-size:.68rem;color:#62718c;display:block;margin-bottom:4px}
+.freq-stat b{font-size:.94rem;color:#22304c;font-variant-numeric:tabular-nums}
+.freq-stat small{font-size:.7rem;color:#66728b;display:block;margin-top:4px}
+.freq-minibar{height:5px;background:#e5e9f1;border-radius:10px;overflow:hidden;margin-top:7px}
+.freq-minibar i{display:block;height:100%;border-radius:inherit;background:#8779ee}
+.freq-stat.active .freq-minibar i{background:#6555ea}
+.freq-conditional{font-size:.75rem;color:#53607b;background:#f7f9fd;border-radius:8px;padding:8px 10px;margin-top:9px}
+.freq-actions{display:flex;gap:9px;justify-content:center;margin:13px 0 0}
+.lead-quick{border:1px solid #dad7ff;background:#f7f6ff;border-radius:12px;padding:13px;margin-top:14px}
+.lead-quick h3{font-size:.87rem;margin:0 0 5px}
+.lead-quick .quick-grid{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 0}
+.lead-quick button{border:1px solid #dad8f7;border-radius:10px;background:white;color:#3d4c6e;padding:9px 11px;font-size:.77rem;font-weight:800;min-height:42px}
+.lead-quick button.active{border:2px solid #6d5bef;background:#ebe8ff;color:#4f40bd;padding:8px 10px}
+@media(max-width:850px){.freq-control-row{grid-template-columns:1fr}.freq-trio{gap:5px}.freq-stat{padding:8px 7px}.freq-coverage{gap:6px}.freq-cover-card{padding:9px}}
+@media(max-width:520px){.freq-coverage{grid-template-columns:1fr}.freq-cover-card{display:flex;align-items:center;gap:9px}.freq-cover-card small,.freq-cover-card b,.freq-cover-card p{margin:0}.freq-trio{grid-template-columns:1fr}.freq-stat{display:grid;grid-template-columns:1.1fr 1fr auto;align-items:center;gap:6px}.freq-stat span,.freq-stat small{margin:0}.freq-minibar{display:none}}
+
   </style>
 </head>
 <body>
 <div class="app">
   <aside>
-    <div class="brand"><span class="eyebrow">UNOFFICIAL BATTLE TRACKER</span><strong>⚡ 対戦ノート</strong><small>シングル対戦分析 ・ <span class="version-badge">Ver.0.5.1</span></small></div>
+    <div class="brand"><span class="eyebrow">UNOFFICIAL BATTLE TRACKER</span><strong>⚡ 対戦ノート</strong><small>シングル対戦分析 ・ <span class="version-badge">Ver.0.6</span></small></div>
     <nav class="nav" aria-label="メインメニュー">
       <button type="button" data-tab="home" class="active"><span class="symbol">⌂</span>ホーム</button>
       <button type="button" data-tab="record"><span class="symbol">✚</span>対戦記録</button>
@@ -463,6 +501,81 @@ document.addEventListener('click',e=>{
  renderDraftTeamPreview();
  f.scrollIntoView({block:'start',behavior:'instant'});
  toast('左のフォームに6匹をコピーしました。変更して新しい構築として保存できます。');
+});
+
+
+// ---- Ver.0.6: win/loss-independent frequency reporting and quick opponent leads. ----
+// Data stays in the existing matches[] records; no migration and no game names in published code.
+let frequencySort='preview',frequencyGrouping='form',frequencyOwnLead='all',frequencyShowAll=false;
+const FREQ_LABELS={preview:'見せ合い6匹',seen:'実際に確認',lead:'相手の先発'};
+const FREQ_COLORS={preview:'#7265d8',seen:'#3a98a4',lead:'#df8b53'};
+function freqName(value){return typeof value==='string'?normalizeMon(value):'';}
+function freqKey(value){const n=freqName(value);return n?(frequencyGrouping==='species'?speciesOf(n):n):'';}
+function freqKeys(values){return new Set((Array.isArray(values)?values:[]).map(freqKey).filter(Boolean));}
+function freqSnapshot(){
+ const games=data.matches.filter(m=>(analysisParty==='all'||m.partyId===analysisParty)
+  &&(frequencyOwnLead==='all'||freqName(m.myLead)===frequencyOwnLead));
+ const records=games.map(m=>({preview:freqKeys(m.opponent),seen:freqKeys(m.opponentPicks),lead:freqKey(m.oppLead)}));
+ const eligible={preview:0,seen:0,lead:0};const totals=new Map();
+ function ensure(key){if(!totals.has(key))totals.set(key,{name:key,preview:0,seen:0,lead:0,opportunities:0,startedWhenShown:0});return totals.get(key);}
+ for(const r of records){
+  if(r.preview.size)eligible.preview++;
+  if(r.seen.size)eligible.seen++;
+  if(r.lead)eligible.lead++;
+  for(const key of r.preview)ensure(key).preview++;
+  for(const key of r.seen)ensure(key).seen++;
+  if(r.lead)ensure(r.lead).lead++;
+  if(r.lead){for(const key of r.preview){const item=ensure(key);item.opportunities++;if(key===r.lead)item.startedWhenShown++;}}
+ }
+ const rows=[...totals.values()].sort((a,b)=>b[frequencySort]-a[frequencySort]||b.preview-a.preview||a.name.localeCompare(b.name,'ja'));
+ return {games,eligible,rows};
+}
+function freqRate(n,den){return den?`${(n/den*100).toFixed(1)}%`:'—';}
+function frequencySection(){
+ const snap=freqSnapshot();const covered=snap.eligible;
+ const ownLeads=[...new Set(data.matches.filter(m=>analysisParty==='all'||m.partyId===analysisParty).map(m=>freqName(m.myLead)).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ja'));
+ if(frequencyOwnLead!=='all'&&!ownLeads.includes(frequencyOwnLead)){frequencyOwnLead='all';return frequencySection();}
+ const coverage=Object.keys(FREQ_LABELS).map(k=>`<div class="freq-cover-card"><small>${FREQ_LABELS[k]}の記録あり</small><b>${covered[k]} / ${snap.games.length}試合</b><p>この${covered[k]}試合を「${FREQ_LABELS[k]}」の割合の分母に使用</p></div>`).join('');
+ const modeButtons=Object.keys(FREQ_LABELS).map(k=>`<button type="button" class="freq-mode ${frequencySort===k?'active':''}" data-freq-sort="${k}" aria-pressed="${frequencySort===k}">${h(FREQ_LABELS[k])}の多い順</button>`).join('');
+ const top=snap.rows.slice(0,frequencyShowAll?2000:12);
+ const rows=top.map((r,i)=>{
+  const allStats=Object.keys(FREQ_LABELS).map(k=>{const count=r[k],den=covered[k],pct=den?count/den*100:0;return `<div class="freq-stat ${frequencySort===k?'active':''}"><span>${h(FREQ_LABELS[k])}</span><b>${count}回 ・ ${freqRate(count,den)}</b><small>記録あり${den}試合中</small><div class="freq-minibar"><i style="width:${Math.max(0,Math.min(100,pct))}%;background:${FREQ_COLORS[k]}"></i></div></div>`}).join('');
+  const conditional=r.opportunities?`${r.startedWhenShown}回 / ${r.opportunities}試合 = ${freqRate(r.startedWhenShown,r.opportunities)}`:'—（該当する先発記録なし）';
+  return `<div class="freq-entry"><div class="freq-entry-name"><span class="freq-rank">${i+1}</span><strong>${h(r.name)}</strong>${r.preview?`<span class="pill">相手の6匹に${r.preview}回</span>`:''}</div><div class="freq-trio">${allStats}</div><div class="freq-conditional">見せ合いにいた試合で先発だった割合：<strong>${conditional}</strong><br><span class="muted">相手の先発が記録された該当試合だけで計算</span></div></div>`;
+ }).join('');
+ const resultRows=snap.rows.length?rows:'<div class="empty"><strong>まだ対象のポケモン記録がありません</strong><div class="small">対戦記録で相手の6匹・確認できた選出・先発を登録すると、ここに表示されます。</div></div>';
+ const more=snap.rows.length>12?`<div class="freq-actions"><button type="button" class="button secondary" data-freq-more>${frequencyShowAll?'上位12件だけ表示':`残り${snap.rows.length-12}件も表示`}</button></div>`:'';
+ return `<div class="card freq-section" id="freq-section"><div class="freq-top"><div><div class="freq-eyebrow">OPPONENT FREQUENCY / Ver.0.6</div><h2>相手の出現・選出・先発ランキング</h2><p class="section-intro" style="margin:7px 0 0">勝ち負けに関係なく、記録済みの相手の傾向を集計。上の「分析するパーティ」で切り替えできます。</p></div><span class="pill">${snap.games.length}試合を対象</span></div>
+ <div class="freq-control-row"><label class="field">自分の先発で絞り込む<select class="generic" id="freq-own-lead"><option value="all">指定しない（先発未記録も含む）</option>${ownLeads.map(n=>`<option value="${h(n)}" ${frequencyOwnLead===n?'selected':''}>${h(n)}を先発にした試合</option>`).join('')}</select></label><label class="field">種類・姿のまとめ方<select class="generic" id="freq-group"><option value="form" ${frequencyGrouping==='form'?'selected':''}>姿ごとに分ける</option><option value="species" ${frequencyGrouping==='species'?'selected':''}>同じ種類でまとめる</option></select></label></div>
+ <div class="freq-coverage">${coverage}</div><div class="freq-pills">${modeButtons}</div><div class="help">割合の分母は、その項目が1匹以上記録された試合数。先発・選出未記録を「出なかった」とは扱いません。特に「実際に確認」は、見なかったポケモンを不選出と断定しない参考値です。</div>
+ <div class="freq-list" aria-live="polite">${resultRows}</div>${more}<div class="notice" style="margin-top:15px">ランキングは記録に基づく出現傾向です。先発率と「見せ合いにいたときの先発割合」は分母が異なります。メガシンカ後の姿が確認された場合でも、見せ合い・先発は記録された名前を使います。</div></div>`;
+}
+const renderAnalysisBeforeFrequency=renderAnalysis;
+renderAnalysis=function(){renderAnalysisBeforeFrequency();const parent=$('#tab-analysis');const filter=parent?.querySelector(':scope > .card');if(filter)filter.insertAdjacentHTML('afterend',frequencySection());else parent?.insertAdjacentHTML('afterbegin',frequencySection());};
+const renderRecordBeforeFrequency=renderRecord;
+renderRecord=function(){renderRecordBeforeFrequency();const select=$('#opp-lead');if(!select)return;
+ const opts=[...new Set(draft.opponent.map(freqName).filter(Boolean))];
+ const actions=opts.map(n=>`<button type="button" data-quick-opp-lead="${h(n)}" class="${draft.oppLead===n?'active':''}" aria-pressed="${draft.oppLead===n}">${draft.oppLead===n?'✓ ':''}${h(n)}</button>`).join('');
+ const html=`<div class="lead-quick"><h3>相手の先発をワンタップ登録 <span class="pill">おすすめ</span></h3><div class="help">相手の6匹から先発を選ぶと「実際に確認したポケモン」にも登録します。違う場合は押し直せるよ。</div><div class="quick-grid">${actions||'<span class="small muted">まず相手の見せ合いを登録してください。</span>'}${draft.oppLead?'<button type="button" data-clear-opp-lead>先発記録を解除</button>':''}</div></div>`;
+ select.closest('.form-row')?.insertAdjacentHTML('afterend',html);
+};
+document.addEventListener('click',e=>{
+ const quick=e.target.closest('button[data-quick-opp-lead]');if(quick){
+  const n=quick.dataset.quickOppLead;
+  if(!draft.opponent.map(freqName).includes(n))return;
+  if(!draft.opponentPicks.includes(n)){
+   if(draft.opponentPicks.length>=3){toast('確認済みの3匹から1匹を解除して、先発を設定してください');return;}
+   draft.opponentPicks.push(n);
+  }
+  draft.oppLead=n;renderRecord();return;
+ }
+ if(e.target.closest('button[data-clear-opp-lead]')){draft.oppLead='';renderRecord();return;}
+ const sort=e.target.closest('button[data-freq-sort]');if(sort&&FREQ_LABELS[sort.dataset.freqSort]){frequencySort=sort.dataset.freqSort;frequencyShowAll=false;renderAnalysis();return;}
+ if(e.target.closest('button[data-freq-more]')){frequencyShowAll=!frequencyShowAll;renderAnalysis();return;}
+});
+document.addEventListener('change',e=>{
+ if(e.target.id==='freq-group'){frequencyGrouping=e.target.value==='species'?'species':'form';frequencyShowAll=false;renderAnalysis();}
+ if(e.target.id==='freq-own-lead'){frequencyOwnLead=e.target.value;frequencyShowAll=false;renderAnalysis();}
 });
 
 setTab('home');
