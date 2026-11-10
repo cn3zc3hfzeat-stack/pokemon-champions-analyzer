@@ -125,16 +125,44 @@
     .storage-label{font-weight:800;font-size:.82rem}.storage-ok{color:#128269}.storage-warn{color:#bc6b1a}.storage-error{color:#b53f54}
     .v07-progress{margin-bottom:16px;padding:13px 17px;background:#fff;border:1px solid var(--line);border-radius:12px;display:flex;align-items:center;gap:10px}.v07-progress .dot{width:9px;height:9px;background:#7768e9;border-radius:50%}
     #v07-storage-panel{margin-top:18px}.v07-info-row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid #e8ecf5}.v07-info-row:last-child{border:0}
+
+    /* Ver.0.9: local-only opponent selection prediction & evidence */
+    .pred-hero{border:1px solid #dedafc;background:linear-gradient(120deg,#fff,#f8f7ff);margin-bottom:18px}
+    .pred-mini{font-size:.69rem;font-weight:850;letter-spacing:.09em;color:#6153cc}
+    .pred-entry{display:grid;grid-template-columns:minmax(160px,1fr) 90px 90px;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid #eef0f7}
+    .pred-entry:last-child{border-bottom:0}.pred-entry strong{font-size:.85rem;overflow-wrap:anywhere}
+    .pred-num{font-size:1.15rem;font-weight:800;font-variant-numeric:tabular-nums}
+    .pred-dim{font-size:.71rem;color:#73809a;margin-top:2px}.pred-track{height:6px;background:#edf0f8;border-radius:10px;overflow:hidden;margin-top:6px}.pred-track>i{display:block;height:100%;border-radius:10px;background:#6d5eeb}
+    .pred-track.lead>i{background:#e39558}
+    .pred-check{font-size:.76rem;color:#5b6b85;background:#f6f7fa;border-radius:10px;padding:10px 12px;margin-top:12px}
+    .pred-slot-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;margin:10px 0 14px}
+    .pred-slot{min-width:0;display:flex;align-items:stretch;gap:6px}.pred-slot input{flex:1;min-width:0;max-width:100%;padding:10px 9px;border:1px solid #d7deec;border-radius:9px;background:#fff;height:42px;font-size:.82rem}
+    .pred-slot button{background:#edeaff;border:1px solid #dcd6ff;color:#5647bd;border-radius:9px;font-size:.78rem;font-weight:850;padding:0 10px}
+    .pred-cover{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}
+    .pred-cover>div{background:#f7f8fc;border:1px solid #e6eaf2;border-radius:11px;padding:13px}.pred-cover small{display:block;color:#67748f;font-size:.7rem}.pred-cover b{font-size:1.15rem;font-variant-numeric:tabular-nums}
+    .pred-threshold{font-size:.78rem;color:#79522d;background:#fff8e9;border:1px solid #f0dfbd;padding:11px 12px;border-radius:10px;margin:12px 0}
+    .pred-combo{padding:12px 13px;border:1px solid #e6e7f1;border-radius:10px;background:#fafbff;margin-top:9px}.pred-combo b{font-size:.87rem}.pred-combo small{display:block;color:#6d7891;margin-top:5px;font-size:.75rem}
+    .pred-compare{padding:12px 0;border-bottom:1px solid #e8edf5}.pred-compare:last-child{border:0}.pred-compare p{font-size:.76rem;color:#65728a;margin:5px 0}
+    .pred-picker{position:fixed;inset:0;z-index:125;background:#111b37b3;display:flex;align-items:center;justify-content:center;padding:17px}
+    .pred-picker-box{width:min(760px,100%);height:min(76vh,770px);display:flex;flex-direction:column;background:#fff;border-radius:17px;overflow:hidden;box-shadow:0 15px 50px #0002}
+    .pred-picker-head{padding:18px;border-bottom:1px solid var(--line)}.pred-picker-search{width:100%;padding:13px;border:1px solid #d8dded;border-radius:9px;margin-top:12px}
+    .pred-picker-rows{overflow-y:auto;padding:12px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;align-content:start}
+    .pred-picker-row{border:1px solid #e3e7f0;text-align:left;border-radius:9px;padding:11px;min-height:48px;background:#f9faff;font-weight:750;overflow-wrap:anywhere}.pred-picker-row:disabled{opacity:.45}
+    .pred-research{border-top:1px solid var(--line);margin-top:18px;padding-top:17px}
+    .pred-help{line-height:1.65;font-size:.78rem;color:#60708b}
+    @media(max-width:900px){.pred-slot-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:630px){.pred-cover{grid-template-columns:1fr}.pred-entry{grid-template-columns:minmax(110px,1fr) 65px 65px;gap:6px}.pred-num{font-size:.95rem}.pred-slot-list{grid-template-columns:1fr}.pred-picker-rows{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="app">
   <aside>
-    <div class="brand"><span class="eyebrow">UNOFFICIAL BATTLE TRACKER</span><strong>⚡ 対戦ノート</strong><small>シングル対戦分析 ・ <span class="version-badge">Ver.0.7</span></small></div>
+    <div class="brand"><span class="eyebrow">UNOFFICIAL BATTLE TRACKER</span><strong>⚡ 対戦ノート</strong><small>シングル対戦分析 ・ <span class="version-badge">Ver.0.9</span></small></div>
     <nav class="nav" aria-label="メインメニュー">
       <button type="button" data-tab="home" class="active"><span class="symbol">⌂</span>ホーム</button>
       <button type="button" data-tab="record"><span class="symbol">✚</span>対戦記録</button>
       <button type="button" data-tab="analysis"><span class="symbol">▤</span>分析</button>
+      <button type="button" data-tab="predict"><span class="symbol">◉</span>選出予測</button>
       <button type="button" data-tab="parties"><span class="symbol">◇</span>パーティ</button>
       <button type="button" data-tab="dex"><span class="symbol">▦</span>個人図鑑</button>
       <button type="button" data-tab="history"><span class="symbol">◷</span>履歴</button>
@@ -147,6 +175,7 @@
     <section id="tab-home" class="tab-content active"></section>
     <section id="tab-record" class="tab-content"></section>
     <section id="tab-analysis" class="tab-content"></section>
+    <section id="tab-predict" class="tab-content"></section>
     <section id="tab-parties" class="tab-content"></section>
     <section id="tab-dex" class="tab-content"></section>
     <section id="tab-history" class="tab-content"></section>
@@ -165,6 +194,13 @@
     <div id="picker-note" class="picker-note"></div>
     <div id="picker-list" class="picker-list"></div>
   </div>
+</div>
+
+<div id="pred-picker-layer" class="pred-picker hidden" role="presentation" aria-hidden="true">
+ <div class="pred-picker-box" role="dialog" aria-modal="true" aria-labelledby="pred-picker-heading">
+  <div class="pred-picker-head"><div class="spaced"><strong id="pred-picker-heading">相手の6匹を選ぶ</strong><button type="button" class="button secondary small" data-pred-close>閉じる ✕</button></div><input id="pred-picker-query" class="pred-picker-search" type="search" placeholder="個人図鑑や過去の履歴から検索" autocomplete="off"><div class="help" id="pred-picker-info"></div></div>
+  <div class="pred-picker-rows" id="pred-picker-rows"></div>
+ </div>
 </div>
 <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 <input id="import-file" class="hidden" type="file" accept="application/json,.json">
@@ -215,7 +251,7 @@ const formDetail=n=>{const v=FORM_DB[n];if(!v)return `<div class="notice">${h(n)
 const STYLES=['未分類','対面','サイクル','積み展開','受け','天候','トリックルーム','その他'];
 const WIN_TAGS=['選出が刺さった','初手有利','立ち回り','相手のエースを対策','積み展開が成功','サイクル有利','素早さ有利','運要素'];
 const LOSS_TAGS=['選出ミス','初手不利','立ち回りミス','特定のモンスター','素早さ負け','積み展開への対処','受け崩し不足','状態異常','運要素'];
-const labels={home:['対戦ダッシュボード','戦績と最近の対戦をまとめて確認。'],record:['対戦を記録','1試合の結果を短時間で残そう。'],analysis:['対戦分析','相手のモンスターや選出との相性を見つけよう。'],parties:['パーティ管理','構築を登録して、バージョン別に勝率を比較。'],dex:['個人図鑑・種族値','自分で登録したフォーム・タイプ・種族値を管理。'],history:['対戦履歴','いつでも過去の試合を見返せる。'],backup:['保存・バックアップ','対戦データをファイルに書き出して保管。']};
+const labels={home:['対戦ダッシュボード','戦績と最近の対戦をまとめて確認。'],record:['対戦を記録','1試合の結果を短時間で残そう。'],analysis:['対戦分析','相手のモンスターや選出との相性を見つけよう。'],predict:['選出・先発予測','相手の見せ合い6匹から、記録に基づいて傾向を予測。'],parties:['パーティ管理','構築を登録して、バージョン別に勝率を比較。'],dex:['個人図鑑・種族値','自分で登録したフォーム・タイプ・種族値を管理。'],history:['対戦履歴','いつでも過去の試合を見返せる。'],backup:['保存・バックアップ','対戦データをファイルに書き出して保管。']};
 const $=sel=>document.querySelector(sel);
 const h=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const uid=()=>typeof crypto!=='undefined'&&crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2);
@@ -263,7 +299,7 @@ const empty=(title,desc,button)=>`<div class="empty"><strong>${title}</strong><d
 const pickResult=m=>`<span class="pill ${m.result==='win'?'win':'loss'}">${m.result==='win'?'勝利':'敗北'}</span>`;
 const detailCard=(m,actions=false)=>`<div class="result-row"><div>${pickResult(m)}</div><div class="content"><div class="result-title">${h(nameOfParty(m.partyId))} <span class="muted small">${fmtTime(m.date)}</span></div><p>相手：${opponents(m).map(h).join('・')||'未記録'}</p><p>自分の選出：${(m.myPicks||[]).map(h).join('・')||'未記録'}　/　相手の確認：${(m.opponentPicks||[]).map(h).join('・')||'未確認'}</p>${m.tags?.length?`<div class="badge-line">${m.tags.map(t=>`<span class="pill">${h(t)}</span>`).join('')}</div>`:''}${m.memo?`<p>メモ：${h(m.memo)}</p>`:''}${matchVariantSummary(m)}</div>${actions?`<div class="mini-actions"><button class="button secondary small" data-edit-match="${h(m.id)}">編集</button><button class="button danger small" data-delete-match="${h(m.id)}">削除</button></div>`:''}</div>`;
 function setTab(next){tab=next;document.querySelectorAll('.nav button').forEach(e=>e.classList.toggle('active',e.dataset.tab===tab));document.querySelectorAll('.tab-content').forEach(e=>e.classList.toggle('active',e.id===`tab-${tab}`));$('#page-title').textContent=labels[tab][0];$('#page-sub').textContent=labels[tab][1];render();window.scrollTo({top:0,behavior:'auto'})}
-function render(){const method={home:renderHome,record:renderRecord,analysis:renderAnalysis,parties:renderParties,history:renderHistory,backup:renderBackup,dex:renderDex}[tab];method()}
+function render(){const method={home:renderHome,record:renderRecord,analysis:renderAnalysis,predict:renderPredict,parties:renderParties,history:renderHistory,backup:renderBackup,dex:renderDex}[tab];method()}
 function renderHome(){const ss=summary(data.matches);const recent=[...data.matches].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);const last10=[...data.matches].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,10);const last=summary(last10);const byParty=data.parties.map(p=>{const arr=data.matches.filter(m=>m.partyId===p.id);const s=summary(arr);return {name:p.name,...s}}).filter(p=>p.n).sort((a,b)=>b.n-a.n);
 $('#tab-home').innerHTML=`<div class="grid stats">${metric('総合勝率',ss.n?percent(ss.w,ss.n)+'%':'—','記録した全試合')}${metric('対戦数',ss.n,'勝ち '+ss.w+' / 負け '+ss.l)}${metric('直近10戦',last.n?percent(last.w,last.n)+'%':'—','勝ち '+last.w+' / 負け '+last.l)}${metric('登録パーティ',data.parties.length,'構築を分けて比較')}</div><div class="grid two"><div class="card"><h2>最近の対戦 <button class="button secondary small" data-tab="history">すべて見る</button></h2>${recent.length?recent.map(m=>detailCard(m)).join(''):empty('まだ対戦記録がありません','パーティを登録して、最初の1戦を記録しよう。',{tab:data.parties.length?'record':'parties',text:data.parties.length?'対戦を記録':'パーティを登録'})}</div><div class="card"><h2>構築別の成績</h2>${byParty.length?byParty.map(p=>barrow(p.name,p.w,p.n)).join(''):empty('構築別の成績はまだありません','対戦記録が増えると、ここで構築ごとの勝率を比較できます。')}<hr class="divider"><div class="callout">💡 相手の見せ合い6匹と実際に出たモンスターは、別々に集計します。確認していない選出は推測せず空欄にしてね。</div></div></div>`}
 function barrow(label,w,n){const rate=percent(w,n);return `<div class="barrow"><div class="spaced"><span>${h(label)}</span><span class="mono">${rate}% <small class="muted">（${w}勝 / ${n}戦）</small></span></div><div class="bar"><div style="width:${rate}%" class="${rate<40?'low':rate>=65?'high':''}"></div></div></div>`}
@@ -554,7 +590,7 @@ function frequencySection(){
  }).join('');
  const resultRows=snap.rows.length?rows:'<div class="empty"><strong>まだ対象のポケモン記録がありません</strong><div class="small">対戦記録で相手の6匹・確認できた選出・先発を登録すると、ここに表示されます。</div></div>';
  const more=snap.rows.length>12?`<div class="freq-actions"><button type="button" class="button secondary" data-freq-more>${frequencyShowAll?'上位12件だけ表示':`残り${snap.rows.length-12}件も表示`}</button></div>`:'';
- return `<div class="card freq-section" id="freq-section"><div class="freq-top"><div><div class="freq-eyebrow">OPPONENT FREQUENCY / Ver.0.7</div><h2>相手の出現・選出・先発ランキング</h2><p class="section-intro" style="margin:7px 0 0">勝ち負けに関係なく、記録済みの相手の傾向を集計。上の「分析するパーティ」で切り替えできます。</p></div><span class="pill">${snap.games.length}試合を対象</span></div>
+ return `<div class="card freq-section" id="freq-section"><div class="freq-top"><div><div class="freq-eyebrow">OPPONENT FREQUENCY / Ver.0.9</div><h2>相手の出現・選出・先発ランキング</h2><p class="section-intro" style="margin:7px 0 0">勝ち負けに関係なく、記録済みの相手の傾向を集計。上の「分析するパーティ」で切り替えできます。</p></div><span class="pill">${snap.games.length}試合を対象</span></div>
  <div class="freq-control-row"><label class="field">自分の先発で絞り込む<select class="generic" id="freq-own-lead"><option value="all">指定しない（先発未記録も含む）</option>${ownLeads.map(n=>`<option value="${h(n)}" ${frequencyOwnLead===n?'selected':''}>${h(n)}を先発にした試合</option>`).join('')}</select></label><label class="field">種類・姿のまとめ方<select class="generic" id="freq-group"><option value="form" ${frequencyGrouping==='form'?'selected':''}>姿ごとに分ける</option><option value="species" ${frequencyGrouping==='species'?'selected':''}>同じ種類でまとめる</option></select></label></div>
  <div class="freq-coverage">${coverage}</div><div class="freq-pills">${modeButtons}</div><div class="help">割合の分母は、その項目が1匹以上記録された試合数。先発・選出未記録を「出なかった」とは扱いません。特に「実際に確認」は、見なかったポケモンを不選出と断定しない参考値です。</div>
  <div class="freq-list" aria-live="polite">${resultRows}</div>${more}<div class="notice" style="margin-top:15px">ランキングは記録に基づく出現傾向です。先発率と「見せ合いにいたときの先発割合」は分母が異なります。メガシンカ後の姿が確認された場合でも、見せ合い・先発は記録された名前を使います。</div></div>`;
@@ -699,7 +735,7 @@ async function initV07(){
 }
 // Preserve existing screen controls while extending backup with migration status and capacity information.
 const v07OldRenderBackup=renderBackup;
-renderBackup=function(){v07OldRenderBackup();const node=$('#tab-backup');if(!node)return;node.insertAdjacentHTML('afterbegin',`<div class="card" id="v07-storage-panel"><h2>保存データの状態 <span class="pill">Ver.0.7</span></h2><div class="v07-info-row"><span>保存方式</span><strong class="storage-label ${v07Mode==='idb'?'storage-ok':'storage-warn'}">${v07Mode==='idb'?'IndexedDB（iPad内）':v07Mode==='legacy'?'旧方式（localStorage）':'確認中'}</strong></div><div class="v07-info-row"><span>対戦記録</span><strong>${data.matches.length.toLocaleString('ja-JP')}試合</strong></div><div class="v07-info-row"><span>登録パーティ / 個人図鑑</span><strong>${data.parties.length}件 / ${dexEntries.length}件</strong></div><div class="v07-info-row"><span>書き込み状況</span><strong>${v07Error?'⚠ 保存エラー':v07Pending?'保存処理中':'保存済み'}</strong></div><div class="help" style="margin-top:12px">移行前の旧データは自動削除しません。IndexedDBの保存容量は端末・Safariの状態によって異なり、試合数が無制限になるわけではありません。</div></div><div class="notice" style="margin-top:16px"><strong>新しいiPadへの引き継ぎ：</strong>「JSONをダウンロード」で全データを書き出す → ファイルをAirDropやiCloud Driveで移す → 新端末で同じアプリを開き「JSONファイルを選択」で復元。取り込み前に新端末のデータもバックアップしてね。</div>`);
+renderBackup=function(){v07OldRenderBackup();const node=$('#tab-backup');if(!node)return;node.insertAdjacentHTML('afterbegin',`<div class="card" id="v07-storage-panel"><h2>保存データの状態 <span class="pill">Ver.0.9</span></h2><div class="v07-info-row"><span>保存方式</span><strong class="storage-label ${v07Mode==='idb'?'storage-ok':'storage-warn'}">${v07Mode==='idb'?'IndexedDB（iPad内）':v07Mode==='legacy'?'旧方式（localStorage）':'確認中'}</strong></div><div class="v07-info-row"><span>対戦記録</span><strong>${data.matches.length.toLocaleString('ja-JP')}試合</strong></div><div class="v07-info-row"><span>登録パーティ / 個人図鑑</span><strong>${data.parties.length}件 / ${dexEntries.length}件</strong></div><div class="v07-info-row"><span>書き込み状況</span><strong>${v07Error?'⚠ 保存エラー':v07Pending?'保存処理中':'保存済み'}</strong></div><div class="help" style="margin-top:12px">移行前の旧データは自動削除しません。IndexedDBの保存容量は端末・Safariの状態によって異なり、試合数が無制限になるわけではありません。</div></div><div class="notice" style="margin-top:16px"><strong>新しいiPadへの引き継ぎ：</strong>「JSONをダウンロード」で全データを書き出す → ファイルをAirDropやiCloud Driveで移す → 新端末で同じアプリを開き「JSONファイルを選択」で復元。取り込み前に新端末のデータもバックアップしてね。</div>`);
  if(navigator.storage?.estimate){navigator.storage.estimate().then(r=>{const n=document.getElementById('v07-storage-panel');if(!n)return;const f=x=>x>=1024*1024*1024?(x/(1024**3)).toFixed(1)+' GiB':(x/(1024**2)).toFixed(1)+' MiB';if(Number.isFinite(r.usage)&&Number.isFinite(r.quota))n.insertAdjacentHTML('beforeend',`<p class="help">ブラウザが報告する推定ストレージ使用量：${f(r.usage)} / 推定割り当て ${f(r.quota)}（対戦ノート専用の容量ではありません）</p>`)}).catch(()=>{});}
 };
 // Replace old export/import handlers. Intercept in capture phase before the v0.6 bubble handlers.
@@ -710,7 +746,7 @@ document.addEventListener('click',e=>{
  try{
   const body={version:1,backupFormat:'battle-note-full-v07',exportedAt:new Date().toISOString(),parties:data.parties,matches:data.matches,personalDex:{format:'personal-dex-v1',entries:dexEntries}};
   // Keep the browser download in the original click event for iPad Safari compatibility.
-  downloadJson(body,'battle-note-v07-full-'+new Date().toISOString().slice(0,10)+'.json');
+  downloadJson(body,'battle-note-v08-full-'+new Date().toISOString().slice(0,10)+'.json');
   toast('全データをJSONに書き出しました。iPadの「ファイル」に保存してね。');
  }catch(err){alert('バックアップを作れませんでした：'+String(err?.message||err));}
 },true);
@@ -730,6 +766,283 @@ document.addEventListener('change',async e=>{
  finally{t.value='';}
 },true);
 document.addEventListener('click',e=>{const btn=e.target.closest('button[data-history-step]');if(!btn)return;historyPage+=Number(btn.dataset.historyStep);renderHistory();});
+
+// ---------- Ver.0.9: local-only statistical lineup / lead forecast ----------
+// All names are read from the user's local private catalog and saved match records.
+// This component does NOT fetch external data or alter IndexedDB schemas.
+let predParty = '', predOpponent = Array(6).fill(''), predView = 'live';
+let predGroup = 'form', predHistory = 'all', predPickerSlot = -1, predPickerQuery = '', predPickerLimit = 90;
+const predKey = name => {
+ const text = normalizeMon(name);
+ return text ? (predGroup === 'species' ? speciesOf(text) : text) : '';
+};
+const predDistinct = arr => [...new Set((Array.isArray(arr) ? arr : []).map(predKey).filter(Boolean))];
+const predDateSort = (a,b) => String(b.date || '').localeCompare(String(a.date || ''));
+const predPct = x => `${(100*x).toFixed(1)}%`;
+// ---------- Ver.0.9: forecasts strictly scoped to ONE exact party ID ----------
+// No cross-party weighting, never classify unknown third opponents as unselected.
+const predValidPreview = m => new Set(predDistinct(m.opponent));
+function predFullPicks(m, preview){
+ const picks=new Set(predDistinct(m.opponentPicks));
+ return picks.size===3&&[...picks].every(k=>preview.has(k))?picks:null;
+}
+function predLead(m,preview){const lead=predKey(m.oppLead);return lead&&preview.has(lead)?lead:'';}
+const predRawRate = (n,d) => d ? predPct(n/d) : '—';
+const predRankRate=(n,d,prior,denPrior)=> d<3?null:(n+prior)/(d+denPrior);
+function predPartyMatches(id){
+ let ms=data.matches.filter(m=>m.partyId===id).sort(predDateSort);
+ // 'Recent 100' means most recent 100 matches FOR THIS PARTY, not globally.
+ if(predHistory==='recent100')ms=ms.slice(0,100);
+ return ms;
+}
+function predSnapshot(){
+ const party=data.parties.find(p=>p.id===predParty);
+ if(!party)return {ready:false,candidates:[],reason:'まず自分のパーティを登録・選択してください。'};
+ const entered=predOpponent.map(predKey).filter(Boolean),candidates=[...new Set(entered)];
+ if(candidates.length!==6)return {ready:false,candidates,reason:'相手の見せ合い6匹を重複なく入力してください。'};
+ const candSet=new Set(candidates);
+ const matches=predPartyMatches(party.id);
+ const rows=candidates.map(name=>({name,selectedYes:0,selectedDen:0,leadYes:0,leadDen:0,selectedLeadYes:0,selectedLeadDen:0,similarGames:0,exactGames:0}));
+ const byName=new Map(rows.map(r=>[r.name,r]));
+ const similar=[],combinations=new Map(),exactCombinations=new Map();
+ let totalRelevant=0,leadGames=0,selectionGames=0,exactGames=0;
+ for(const m of matches){
+  const preview=predValidPreview(m),shared=[...preview].filter(n=>candSet.has(n));
+  if(!shared.length)continue;
+  totalRelevant++;
+  const exact=preview.size===6&&shared.length===6;
+  if(exact)exactGames++;
+  const picks=predFullPicks(m,preview);
+  const lead=predLead(m,preview);
+  if(lead)leadGames++;
+  if(picks)selectionGames++;
+  for(const name of shared){
+   const r=byName.get(name);r.similarGames++;if(exact)r.exactGames++;
+   if(lead){r.leadDen++;if(lead===name)r.leadYes++;}
+   if(picks){r.selectedDen++;if(picks.has(name))r.selectedYes++;}
+   if(lead&&picks&&picks.has(name)){
+    r.selectedLeadDen++;if(lead===name)r.selectedLeadYes++;
+   }
+  }
+  if(picks&&[...picks].every(n=>candSet.has(n))){
+   const key=[...picks].sort((a,b)=>a.localeCompare(b,'ja')).join(' / ');
+   const map=exact?exactCombinations:combinations;
+   const value=map.get(key)||{label:key,count:0};value.count++;map.set(key,value);
+  }
+  if(lead||picks)similar.push({m,intersection:shared.length,exact,lead,picks:picks?[...picks]:null});
+ }
+ for(const r of rows){
+  // Small-sample shrinkage toward 50% selection (3 of 6), 16.7% lead (1 of 6).
+  // These ARE per-candidate conditional rates, not a coherent six-person joint distribution.
+  r.selectEstimate=predRankRate(r.selectedYes,r.selectedDen,1.5,3);
+  r.leadEstimate=predRankRate(r.leadYes,r.leadDen,.5,3);
+  r.leadAfterSelection=predRankRate(r.selectedLeadYes,r.selectedLeadDen,.5,3);
+ }
+ const quality=matches.length===0?'新構築・記録0件':selectionGames>=30&&leadGames>=30?'十分な記録':selectionGames>=10&&leadGames>=10?'参考データあり':'記録が少ない';
+ const comboMap=exactCombinations.size?exactCombinations:combinations;
+ return {ready:true,party,candidates,rows,totalMatches:matches.length,totalRelevant,leadGames,selectionGames,exactGames,quality,
+  combosExact:exactCombinations.size>0,combinations:[...comboMap.values()].sort((a,b)=>b.count-a.count).slice(0,5),
+  similar:similar.sort((a,b)=>Number(b.exact)-Number(a.exact)||b.intersection-a.intersection||predDateSort(a.m,b.m)).slice(0,12)};
+}
+function predRank(rows,field){
+ const info=field==='selected'?{v:'selectEstimate',yes:'selectedYes',den:'selectedDen',name:'選出'}:
+ field==='lead'?{v:'leadEstimate',yes:'leadYes',den:'leadDen',name:'先発'}:
+ {v:'leadAfterSelection',yes:'selectedLeadYes',den:'selectedLeadDen',name:'選出時の先発'};
+ const ranked=[...rows].sort((a,b)=>(b[info.v]??-1)-(a[info.v]??-1)||b[info.den]-a[info.den]||a.name.localeCompare(b.name,'ja'));
+ return ranked.map((r,i)=>{
+  const d=r[info.den],n=r[info.yes],predict=r[info.v];
+  const actual=predRawRate(n,d);
+  return `<div class="pred-entry"><div><strong>${i+1}. ${h(r.name)}</strong><div class="pred-dim">${n}/${d}件 ${info.name}（観測実績 ${actual}）</div></div><div><div class="pred-num">${predict===null?'—':predPct(predict)}</div><div class="pred-dim">${predict===null?'3件未満':'補正した参考推定'}</div></div><div class="pred-track ${field!=='selected'?'lead':''}"><i style="width:${predict===null?0:(predict*100).toFixed(1)}%"></i></div></div>`;
+ }).join('');
+}
+function predInsights(snap){
+ const noData=snap.totalMatches===0;
+ const note=noData?'<div class="pred-threshold"><strong>この構築の対戦履歴はまだ0件。</strong> 新しい構築は0から集計します。旧構築の記録を予測に混ぜません。</div>':
+ snap.selectionGames<10||snap.leadGames<10?'<div class="pred-threshold"><strong>対象の記録はまだ少なめ。</strong> 3件未満の項目は推定を隠します。未確認の相手3匹目を非選出とみなさないため、選出率は3匹すべて確認できた試合だけを使います。</div>':
+ '<div class="pred-check">表示するのは、この構築専用の条件付き実績と、それを少し控えめに補正した参考値。相手が次も同じように出す保証はありません。</div>';
+ return `<div class="pred-cover"><div><small>この構築の総対戦</small><b>${snap.totalMatches}試合</b><div class="pred-dim">他の構築は完全に除外</div></div><div><small>関連する先発記録</small><b>${snap.leadGames}試合</b><div class="pred-dim">相手の先発が確認済み</div></div><div><small>関連する全選出記録</small><b>${snap.selectionGames}試合</b><div class="pred-dim">相手の3匹が判明済み</div></div></div>
+ <div class="pred-check"><strong>分析の対象：</strong>${h(snap.party.name)} の試合だけ。入力した相手6匹と<strong>完全一致 ${snap.exactGames}試合</strong>、少なくとも1匹共通した試合 ${snap.totalRelevant}試合。下の各割合は、そのポケモンが相手の見せ合いにいた試合だけを分母にしています。</div>${note}
+ <div class="grid two">
+  <div class="card"><h2>選出されそうなポケモン</h2><p class="pred-help">相手の見せ合いにいた場合の選出率（3匹すべて確認された試合から）。「8/8件・実績100%」と「次回も必ず選出」は別だよ。</p>${predRank(snap.rows,'selected')}</div>
+  <div class="card"><h2>相手の先発予測</h2><p class="pred-help">相手の見せ合いにいた場合の先発率（先発が判明した試合から）。「選出は多いのに先発は少ない」傾向がわかる。</p>${predRank(snap.rows,'lead')}</div>
+ </div>
+ <div class="card" style="margin-top:17px"><h2>選出されたときの先発率</h2><p class="pred-help">該当ポケモンの選出3匹と相手の先発の両方が判明した試合だけを使用。後発が多いポケモンを探せます。</p>${predRank(snap.rows,'after')}</div>
+ <div class="pred-check">※各ポケモンは「相手の6匹に含まれた試合」を別々に抽出するため、6匹の推定割合を合計しても300%／100%にはなりません。タイプや種族値は予測に使っていません。</div>`;
+}
+function predMatchCards(snap){
+ const combos=snap.combinations.length?snap.combinations.map((x,i)=>`<div class="pred-combo"><b>${i+1}. ${h(x.label)}</b><small>${x.count}試合（${snap.combosExact?'見せ合い6匹が完全一致':'同じ自分の構築・候補に含まれる類似対戦'}）</small></div>`).join(''):
+ '<div class="empty"><strong>3匹セットの記録はまだありません</strong><p class="small">相手が使った3匹をすべて確認して記録すると表示されます。</p></div>';
+ const similar=snap.similar.length?snap.similar.map(x=>`<div class="pred-compare"><div class="spaced"><b>${h(fmtTime(x.m.date))} ・ ${h(snap.party.name)}</b><span class="pill">${x.exact?'6匹完全一致':`共通 ${x.intersection}/6匹`}</span></div><p>相手の先発：${x.lead?h(x.m.oppLead):'未記録'} ／ 選出：${x.picks?x.picks.map(h).join('・'):'3匹未確認'}</p><p>相手の見せ合い：${opponents(x.m).map(h).join('・')}</p><span class="pill ${x.m.result==='win'?'win':'loss'}">${x.m.result==='win'?'勝利':'敗北'}（勝敗は予測の計算に不使用）</span></div>`).join(''):
+ '<div class="empty"><strong>同じ構築で似た相手との記録がありません</strong><p class="small">この構築の対戦データを新しく蓄積していこう。</p></div>';
+ return `<div class="grid two" style="margin-top:17px"><div class="card"><h2>実際の3匹セット</h2><p class="pred-help">${snap.combosExact?'見せ合いが完全一致した試合の実績を優先。':'完全一致の3匹セット記録がないため、類似相手の実績を参考表示。'} 相手3匹がすべて判明した試合のみ。</p>${combos}</div><div class="card"><h2>この構築だけの類似対戦 <span class="pill">最大12試合</span></h2>${similar}</div></div>`;
+}
+function predVersionsComparison(snap){
+ if(!snap.ready)return '';
+ const family=partyFamilyId(snap.party),familyParties=data.parties.filter(p=>partyFamilyId(p)===family);
+ const others=familyParties.length>=2?familyParties:data.parties;
+ const cards=others.map(p=>{
+  const matches=data.matches.filter(m=>m.partyId===p.id);
+  const cs=snap.candidates.map(name=>{
+   let show=0,selected=0,selectDen=0,lead=0,leadDen=0;
+   for(const m of matches){const preview=predValidPreview(m);if(!preview.has(name))continue;show++;
+    const picks=predFullPicks(m,preview);if(picks){selectDen++;if(picks.has(name))selected++;}
+    const l=predLead(m,preview);if(l){leadDen++;if(l===name)lead++;}
+   }
+   return {name,show,selected,selectDen,lead,leadDen};
+  });
+  return `<div class="card"><h2>${h(p.name)} ${p.id===predParty?'<span class="pill win">選択中</span>':''}</h2><p class="pred-help">構築 Ver.${partyVersionNum(p)} ／ 総対戦 ${matches.length}試合</p>${cs.map(x=>`<div class="pred-compare"><div class="spaced"><b>${h(x.name)}</b><span class="pred-dim">見せ合い ${x.show}回</span></div><p>選出：${x.selected}/${x.selectDen}（${predRawRate(x.selected,x.selectDen)}）　先発：${x.lead}/${x.leadDen}（${predRawRate(x.lead,x.leadDen)}）</p></div>`).join('')}</div>`;
+ }).join('');
+ return `<div class="pred-check"><strong>構築の比較は予測と別機能。</strong>各パーティの記録を別々に集計して並べます。${familyParties.length>=2?'同じ系列のバージョン同士を比較中。':'同じ系列がないため、登録済みの各構築を表示中。'} 旧構築の試合を新構築の予測へ混ぜることはありません。</div><div class="grid two">${cards}</div>`;
+}
+function predOptions(){
+ return [...new Set([...SPECIES,...data.parties.flatMap(p=>p.pokemon||[]),...data.matches.flatMap(m=>m.opponent||[])].map(normalizeMon).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ja'));
+}
+function predLayout(){
+ const parties=data.parties;
+ if(!parties.some(p=>p.id===predParty))predParty=parties[0]?.id||'';
+ predOpponent=predOpponent.map(normalizeMon);
+ const selection=predOpponent.filter(Boolean).length;
+ const party=parties.find(p=>p.id===predParty);
+ const matches=party?data.matches.filter(m=>m.partyId===party.id).length:0;
+ return `<div class="card pred-hero"><div class="pred-mini">BATTLE PREDICTOR / Ver.0.9</div><h2 style="font-size:1.3rem;margin:7px 0">このパーティ専用の選出・先発予測</h2><p class="pred-help">自分の選んだ構築IDに記録された対戦だけを使用します。1匹入れ替えた新構築は0試合から集計。旧構築に戻せば以前の履歴を再利用できます。</p><div class="form-row">
+ <label class="field">自分の使用パーティ<select id="pred-party" class="generic" ${parties.length?'':'disabled'}>${parties.map(p=>`<option value="${h(p.id)}" ${p.id===predParty?'selected':''}>${h(p.name)}（${data.matches.filter(m=>m.partyId===p.id).length}戦）</option>`).join('')||'<option value="">まずパーティを登録</option>'}</select></label>
+ <label class="field">使う過去データ<select id="pred-history" class="generic"><option value="all" ${predHistory==='all'?'selected':''}>この構築の全試合</option><option value="recent100" ${predHistory==='recent100'?'selected':''}>この構築の直近100試合</option></select></label></div>
+ <div class="pred-check"><strong>現在の対象：${party?h(party.name):'未登録'}</strong> ／ 累計 ${matches}試合。別構築の対戦記録は重み付けも含め<strong>一切使用しません</strong>。新しい構築は「パーティ」→「コピーして修正」で作れます。</div>
+ <div class="spaced" style="margin-top:16px"><b>相手の見せ合い6匹 <span class="pill">${selection} / 6</span></b><button type="button" class="button secondary small" data-pred-clear>6匹をクリア</button></div>
+ <div class="pred-slot-list">${predOpponent.map((n,i)=>`<div class="pred-slot"><input id="pred-mon-${i}" data-pred-mon="${i}" type="text" list="pokemon-list" maxlength="50" placeholder="${i+1}匹目を入力" aria-label="相手の${i+1}匹目" value="${h(n)}"><button type="button" data-pred-picker="${i}">選ぶ</button></div>`).join('')}</div>
+ <div class="form-row"><label class="field">姿の集計<select class="generic" id="pred-group"><option value="form" ${predGroup==='form'?'selected':''}>姿ごとに区別</option><option value="species" ${predGroup==='species'?'selected':''}>同じ種類はまとめて計算</option></select></label><div class="actions" style="align-items:flex-end"><button type="button" class="button" data-pred-refresh>予測を更新</button><button type="button" class="button secondary" data-pred-to-record>この6匹を対戦記録へ</button></div></div>
+ <div class="pred-help">予測は保存済みデータだけでiPad内で計算します。別の構築との比較は専用タブに分離。ポケモン固有のデータはGitHubのHTMLに含めていません。</div></div>`;
+}
+function renderPredict(){
+ const root=$('#tab-predict');if(!root)return;
+ // predLayout selects a valid party before predSnapshot runs.
+ const layout=predLayout(),snap=predSnapshot();
+ const headline=`<div class="actions" style="margin-bottom:17px"><button type="button" class="button ${predView==='live'?'':'secondary'}" data-pred-view="live">リアルタイム予測</button><button type="button" class="button ${predView==='history'?'':'secondary'}" data-pred-view="history">過去の類似対戦</button><button type="button" class="button ${predView==='compare'?'':'secondary'}" data-pred-view="compare">構築バージョン比較</button></div>`;
+ const content=!snap.ready?`<div class="empty"><strong>${h(snap.reason)}</strong><div class="small">まず6匹を入力してね。新しい構築の場合、予測実績は0件から始まります。</div></div>`:
+ predView==='live'?predInsights(snap):predView==='history'?
+ `<div class="card"><h2>この構築だけのデータ状況</h2><div class="pred-cover"><div><small>対象試合数</small><b>${snap.totalMatches}</b></div><div><small>先発記録あり</small><b>${snap.leadGames}</b></div><div><small>選出3匹確認済み</small><b>${snap.selectionGames}</b></div></div><p class="pred-help">未確認の選出は「出なかった」と扱いません。別構築の履歴は表示しません。</p></div>`+predMatchCards(snap):predVersionsComparison(snap);
+ root.innerHTML=layout+headline+content;
+}
+function predRenderPicker(){
+ if(predPickerSlot<0)return;
+ const q=normalizeMon(predPickerQuery).toLocaleLowerCase('ja-JP');
+ const existing=new Set(predOpponent.map(normalizeMon).filter(Boolean));
+ const all=predOptions().filter(n=>n.toLocaleLowerCase('ja-JP').includes(q));
+ const found=all.slice(0,predPickerLimit);
+ const custom=q&&!all.includes(normalizeMon(predPickerQuery))?`<button type="button" class="pred-picker-row" data-pred-choose="${h(normalizeMon(predPickerQuery))}">＋「${h(normalizeMon(predPickerQuery))}」を登録</button>`:'';
+ $('#pred-picker-info').textContent=`現在 ${predPickerSlot+1}匹目 / 候補 ${found.length} / ${all.length}件（個人図鑑・保存履歴より）`;
+ $('#pred-picker-rows').innerHTML=custom+found.map(n=>`<button type="button" class="pred-picker-row" data-pred-choose="${h(n)}" ${existing.has(n)&&predOpponent[predPickerSlot]!==n?'disabled':''}>${typeMarks(n)}${h(n)}</button>`).join('')+(found.length<all.length?`<button type="button" class="pred-picker-row" data-pred-more>さらに表示（残り${all.length-found.length}件）</button>`:'');
+}
+function predPickerOpen(slot){
+ predPickerSlot=slot;predPickerQuery='';predPickerLimit=90;
+ $('#pred-picker-layer').classList.remove('hidden');$('#pred-picker-layer').setAttribute('aria-hidden','false');
+ $('#pred-picker-query').value='';predRenderPicker();requestAnimationFrame(()=>$('#pred-picker-query')?.focus());
+}
+function predPickerClose(){predPickerSlot=-1;$('#pred-picker-layer').classList.add('hidden');$('#pred-picker-layer').setAttribute('aria-hidden','true');}
+function predApply(name){
+ name=normalizeMon(name);
+ if(!name||name.length>50){toast('名前は1〜50文字で入力してください。');return;}
+ if(predOpponent.some((m,i)=>i!==predPickerSlot&&normalizeMon(m)===name)){toast('同じ名前はすでに選ばれています。');return;}
+ predOpponent[predPickerSlot]=name;
+ const next=predOpponent.findIndex((x,i)=>i!==predPickerSlot&&!normalizeMon(x));
+ if(next<0){predPickerClose();renderPredict();return;}
+ predPickerSlot=next;predPickerQuery='';predPickerLimit=90;$('#pred-picker-query').value='';predRenderPicker();requestAnimationFrame(()=>$('#pred-picker-query')?.focus());
+}
+// Capture only our own controls. Existing app event delegates remain untouched.
+document.addEventListener('click',e=>{
+ const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.predPicker!==undefined){e.preventDefault();e.stopImmediatePropagation();predPickerOpen(Number(b.dataset.predPicker));return;}
+ if(b.dataset.predChoose!==undefined){e.preventDefault();e.stopImmediatePropagation();predApply(b.dataset.predChoose);return;}
+ if(b.hasAttribute('data-pred-close')){e.preventDefault();e.stopImmediatePropagation();predPickerClose();return;}
+ if(b.hasAttribute('data-pred-more')){e.preventDefault();e.stopImmediatePropagation();predPickerLimit+=90;predRenderPicker();return;}
+ if(b.hasAttribute('data-pred-clear')){predOpponent=Array(6).fill('');renderPredict();return;}
+ if(b.hasAttribute('data-pred-refresh')){predOpponent=Array.from({length:6},(_,i)=>normalizeMon($('#pred-mon-'+i)?.value||''));renderPredict();return;}
+ if(b.dataset.predView){predView=['live','history','compare'].includes(b.dataset.predView)?b.dataset.predView:'live';renderPredict();return;}
+ if(b.hasAttribute('data-pred-to-record')){
+  predOpponent=Array.from({length:6},(_,i)=>normalizeMon($('#pred-mon-'+i)?.value||''));
+  if(predOpponent.some(x=>!x)||new Set(predOpponent).size!==6){alert('6匹を重複なく入力してください。');return;}
+  if(!data.parties.length){toast('対戦記録へ移す前に自分の構築を登録してね。');setTab('parties');return;}
+  draft=freshDraft();draft.partyId=predParty==='all'?data.parties[0].id:predParty;draft.opponent=[...predOpponent];setTab('record');toast('6匹を対戦記録に引き継ぎました（まだ保存していません）');return;
+ }
+},true);
+document.addEventListener('input',e=>{
+ const t=e.target;
+ if(t.id==='pred-picker-query'){predPickerQuery=t.value;predPickerLimit=90;predRenderPicker();return;}
+ if(t.dataset.predMon!==undefined){predOpponent[Number(t.dataset.predMon)]=t.value;return;}
+});
+document.addEventListener('change',e=>{
+ const t=e.target;
+ if(t.id==='pred-party'){predParty=t.value;renderPredict();return;}
+ if(t.id==='pred-history'){predHistory=t.value;renderPredict();return;}
+ if(t.id==='pred-group'){predGroup=t.value;renderPredict();return;}
+ if(t.dataset.predMon!==undefined){predOpponent[Number(t.dataset.predMon)]=normalizeMon(t.value);return;}
+});
+$('#pred-picker-layer').addEventListener('click',e=>{if(e.target.id==='pred-picker-layer')predPickerClose()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&predPickerSlot>=0)predPickerClose()});
+
+
+// ---------- Ver.0.9: independent party versions; old IDs/history preserved ----------
+const partyFamilyId=p=>p?.familyId||p?.id||'';
+const partyVersionNum=p=>Number.isInteger(p?.versionNumber)&&p.versionNumber>=1?p.versionNumber:1;
+function nextPartyVersion(parent){
+ const family=partyFamilyId(parent);
+ return Math.max(1,...data.parties.filter(p=>partyFamilyId(p)===family).map(partyVersionNum))+1;
+}
+// This listener runs after the original "copy to new" handler and annotates the new form.
+document.addEventListener('click',e=>{
+ const btn=e.target.closest('button[data-party-clone]');if(!btn)return;
+ const parent=data.parties.find(p=>p.id===btn.dataset.partyClone);
+ const f=document.querySelector('#party-form');if(!parent||!f)return;
+ const version=nextPartyVersion(parent);
+ f.dataset.parentPartyId=parent.id;
+ f.dataset.familyId=partyFamilyId(parent);
+ f.dataset.versionNumber=String(version);
+ const root=(parent.familyLabel||parent.name).replace(/\s+(?:修正版|Ver\.?\s*\d+|v\d+)$/i,'').trim();
+ f.elements['party-name'].value=(root+' Ver.'+version).slice(0,80);
+ toast('構築 Ver.'+version+' の新規登録フォームを用意しました。保存後の予測は0試合から始まります。');
+});
+// Capture the count before the legacy save, so invalid submits cannot mutate an old party.
+document.addEventListener('submit',e=>{if(e.target.id==='party-form')e.target.dataset.beforePartyCount=String(data.parties.length);},true);
+// The existing form handler creates the new unique ID synchronously. Add lineage only to that new ID.
+document.addEventListener('submit',e=>{
+ if(e.target.id!=='party-form')return;
+ const f=e.target;
+ const parentId=f.dataset.parentPartyId;
+ if(!parentId||data.parties.length<=Number(f.dataset.beforePartyCount||0))return;
+ const parent=data.parties.find(p=>p.id===parentId);
+ const child=data.parties.at(-1);
+ if(!parent||!child||child.id===parent.id||child.familyId)return;
+ const newVersion=Number(f.dataset.versionNumber)||nextPartyVersion(parent);
+ child.familyId=partyFamilyId(parent);
+ child.versionNumber=newVersion;
+ child.basedOnPartyId=parent.id;
+ child.familyLabel=parent.familyLabel||parent.name.replace(/\s+(?:修正版|Ver\.?\s*\d+|v\d+)$/i,'').trim();
+ if(saveData()){
+  predParty=child.id;
+  if(!draft.editId){draft=freshDraft();draft.partyId=child.id;}
+  renderParties();
+  toast('Ver.'+newVersion+' を別構築として保存。選出予測は0試合から集計します。');
+ }
+ delete f.dataset.parentPartyId;
+ delete f.dataset.beforePartyCount;
+ delete f.dataset.familyId;
+ delete f.dataset.versionNumber;
+});
+// Display the version relationship without changing historical match IDs.
+const renderPartiesV09Base=renderParties;
+renderParties=function(){
+ renderPartiesV09Base();
+ document.querySelectorAll('#tab-parties .team-party-card').forEach((card,i)=>{
+  const p=data.parties[i];if(!p)return;
+  const lead=p.basedOnPartyId?data.parties.find(x=>x.id===p.basedOnPartyId):null;
+  const version=partyVersionNum(p);
+  const note=document.createElement('p');note.className='help';
+  note.textContent=`構築固有の対戦記録で予測 ｜ Ver.${version}${lead?'（元：'+lead.name+'）':''} ｜ この構築の記録のみ使用`;
+  card.querySelector('.actions')?.before(note);
+ });
+ const intro=document.querySelector('#tab-parties .section-intro');
+ if(intro)intro.textContent+=' 1匹変更したら必ず別構築として保存し、以前の構築は残してください。元に戻すときは古い構築を選ぶだけです。';
+};
 
 initV07();
 </script>
